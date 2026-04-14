@@ -12,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Search, ShoppingCart, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import heroBackground from "@/assets/hero-concrete.jpeg";
 
 export default function CatalogPage() {
   const [productos, setProductos] = useState<any[]>([]);
@@ -52,8 +53,17 @@ export default function CatalogPage() {
   return (
     <PublicLayout>
       {/* Hero */}
-      <section className="bg-primary py-16">
-        <div className="container text-center">
+      <section className="relative py-16 bg-primary overflow-hidden">
+        {/* Background Image */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url(${heroBackground})` }}
+        />
+        {/* Dark Overlay */}
+        <div className="absolute inset-0 bg-black/70" />
+        
+        {/* Content */}
+        <div className="container text-center relative z-10">
           <h1 className="text-4xl font-bold text-primary-foreground mb-3">Materiales de Construcción</h1>
           <p className="text-primary-foreground/80 text-lg mb-6">
             Catálogo completo con los mejores precios para tu obra
