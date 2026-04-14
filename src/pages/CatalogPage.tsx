@@ -139,49 +139,56 @@ export default function CatalogPage() {
           <p className="text-center text-muted-foreground py-12">No se encontraron productos.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {productos.map((p) => (
-              <Card key={p.producto_id} className="shadow-sm hover:shadow-md transition-shadow">
-                <CardContent className="p-5 flex flex-col gap-3">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="font-semibold text-sm leading-tight">{p.nombre}</h3>
-                      <p className="text-xs text-muted-foreground">{p.sku}</p>
+            {productos.map((p) => {
+              const CategoryIcon = getCategoryIcon(p.categoria_nombre);
+              return (
+                <Card key={p.producto_id} className="shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+                  {/* Icono representativo de categoría */}
+                  <div className="h-40 bg-muted flex items-center justify-center rounded-t-lg">
+                    <CategoryIcon className="h-20 w-20 text-primary stroke-[1.5]" />
+                  </div>
+                  <CardContent className="p-5 flex flex-col gap-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold text-base leading-tight text-foreground truncate">{p.nombre}</h3>
+                        <p className="text-xs text-muted-foreground mt-0.5">{p.sku}</p>
+                      </div>
+                      {p.stock_disponible < 20 && (
+                        <Badge variant="destructive" className="text-[10px] shrink-0 ml-2">Stock bajo</Badge>
+                      )}
                     </div>
-                    {p.stock_disponible < 20 && (
-                      <Badge variant="destructive" className="text-[10px] shrink-0">Stock bajo</Badge>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span>{p.categoria_nombre}</span>
-                    <span>·</span>
-                    <span>{p.proveedor_nombre}</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground line-clamp-2">{p.descripcion}</p>
-                  <div className="mt-auto flex items-end justify-between pt-2">
-                    <div>
-                      <p className="text-lg font-bold">{formatARS(p.precio_unitario)}</p>
-                      <p className="text-xs text-muted-foreground">Stock: {p.stock_disponible} {p.unidad_medida}</p>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <span>{p.categoria_nombre}</span>
+                      <span>·</span>
+                      <span>{p.proveedor_nombre}</span>
                     </div>
-                    <Button
-                      size="sm"
-                      disabled={p.stock_disponible <= 0}
-                      onClick={() => {
-                        addItem({
-                          producto_id: p.producto_id,
-                          nombre: p.nombre,
-                          sku: p.sku,
-                          precio_unitario: p.precio_unitario,
-                          stock_disponible: p.stock_disponible,
-                        });
-                        toast.success("Agregado al carrito");
-                      }}
-                    >
-                      <ShoppingCart className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                    <p className="text-xs text-muted-foreground line-clamp-2">{p.descripcion}</p>
+                    <div className="mt-auto flex items-end justify-between pt-3 border-t border-border/50">
+                      <div>
+                        <p className="text-2xl font-bold text-foreground">{formatARS(p.precio_unitario)}</p>
+                        <p className="text-xs text-muted-foreground">Stock: {p.stock_disponible} {p.unidad_medida}</p>
+                      </div>
+                      <Button
+                        size="sm"
+                        disabled={p.stock_disponible <= 0}
+                        onClick={() => {
+                          addItem({
+                            producto_id: p.producto_id,
+                            nombre: p.nombre,
+                            sku: p.sku,
+                            precio_unitario: p.precio_unitario,
+                            stock_disponible: p.stock_disponible,
+                          });
+                          toast.success("Agregado al carrito");
+                        }}
+                      >
+                        <ShoppingCart className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         )}
       </section>
