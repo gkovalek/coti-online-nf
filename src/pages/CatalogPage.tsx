@@ -1,0 +1,168 @@
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
+import { useDebounce } from "@/hooks/useDebounce";
+import { useCart } from "@/lib/cart";
+import { formatARS } from "@/lib/format";
+import { PublicLayout } from "@/components/PublicLayout";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Search, ShoppingCart, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
+import { toast } from "sonner";
+
+export default function CatalogPage() {
+  const [productos, setProductos] = useState<any[]>([]);
+  const [categorias, setCategorias] = useState<any[]>([]);
+  const [proveedores, setProveedores] = useState<any[]>([]);
+  const [search, setSearch] = useState("");
+  const [catFilter, setCatFilter] = useState("all");
+  const [provFilter, setProvFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("nombre");
+  const [loading, setLoading] = useState(true);
+  const debouncedSearch = useDebounce(search);
+  const addItem = useCart((s) => s.addItem);
+
+  useEffect(() => {
+    supabase.from("categorias").select("id, nombre").then(({ data }) => setCategorias(data || []));
+    supabase.from("proveedores").select("id, nombre").then(({ data }) => setProveedores(data || []));
+  }, []);
+
+  useEffect(() => {
+    setLoading(true);
+    let query = supabase.from("vw_catalogo_vigente").select("*");
+    if (debouncedSearch) {
+      query = query.or(`nombre.ilike.%${debouncedSearch}%,sku.ilike.%${debouncedSearch}%`);
+    }
+    if (catFilter !== "all") query = query.eq("categoria_id", catFilter);
+    if (provFilter !== "all") query = query.eq("proveedor_id", provFilter);
+    if (sortBy === "precio_asc") query = query.order("precio_unitario", { ascending: true });
+    else if (sortBy === "precio_desc") query = query.order("precio_unitario", { ascending: false });
+    else query = query.order("nombre");
+
+    query.then(({ data, error }) => {
+      if (error) toast.error("Error cargando catálogo");
+      setProductos(data || []);
+      setLoading(false);
+    });
+  }, [debouncedSearch, catFilter, provFilter, sortBy]);
+
+  return (
+    <PublicLayout>
+      {/* Hero */}
+      <section className="bg-primary py-16">
+        <div className="container text-center">
+          <h1 className="text-4xl font-bold text-primary-foreground mb-3">Materiales de Construcción</h1>
+          <p className="text-primary-foreground/80 text-lg mb-6">
+            Catálogo completo con los mejores precios para tu obra
+          </p>
+          <div className="flex justify-center gap-3">
+            <Link to="/carrito">
+              <Button variant="secondary" size="lg">
+                <ShoppingCart className="mr-2 h-5 w-5" /> Ver Carrito
+              </Button>
+            </Link>
+            <Link to="/buscar-cotizacion">
+              <Button variant="outline" size="lg" className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10">
+                Mis Cotizaciones <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Filters */}
+      <section className="container py-6">
+        <div className="flex flex-col md:flex-row gap-3 items-center">
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input placeholder="Buscar por nombre o SKU..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+          </div>
+          <Select value={catFilter} onValueChange={setCatFilter}>
+            <SelectTrigger className="w-full md:w-48"><SelectValue placeholder="Categoría" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas las categorías</SelectItem>
+              {categorias.map((c) => <SelectItem key={c.id} value={c.id}>{c.nombre}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={provFilter} onValueChange={setProvFilter}>
+            <SelectTrigger className="w-full md:w-48"><SelectValue placeholder="Proveedor" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos los proveedores</SelectItem>
+              {proveedores.map((p) => <SelectItem key={p.id} value={p.id}>{p.nombre}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-full md:w-48"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="nombre">Nombre A-Z</SelectItem>
+              <SelectItem value="precio_asc">Precio ↑</SelectItem>
+              <SelectItem value="precio_desc">Precio ↓</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </section>
+
+      {/* Grid */}
+      <section className="container pb-12">
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <Card key={i} className="animate-pulse"><CardContent className="p-6 h-48" /></Card>
+            ))}
+          </div>
+        ) : productos.length === 0 ? (
+          <p className="text-center text-muted-foreground py-12">No se encontraron productos.</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {productos.map((p) => (
+              <Card key={p.producto_id} className="shadow-sm hover:shadow-md transition-shadow">
+                <CardContent className="p-5 flex flex-col gap-3">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="font-semibold text-sm leading-tight">{p.nombre}</h3>
+                      <p className="text-xs text-muted-foreground">{p.sku}</p>
+                    </div>
+                    {p.stock_disponible < 20 && (
+                      <Badge variant="destructive" className="text-[10px] shrink-0">Stock bajo</Badge>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span>{p.categoria_nombre}</span>
+                    <span>·</span>
+                    <span>{p.proveedor_nombre}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground line-clamp-2">{p.descripcion}</p>
+                  <div className="mt-auto flex items-end justify-between pt-2">
+                    <div>
+                      <p className="text-lg font-bold">{formatARS(p.precio_unitario)}</p>
+                      <p className="text-xs text-muted-foreground">Stock: {p.stock_disponible} {p.unidad_medida}</p>
+                    </div>
+                    <Button
+                      size="sm"
+                      disabled={p.stock_disponible <= 0}
+                      onClick={() => {
+                        addItem({
+                          producto_id: p.producto_id,
+                          nombre: p.nombre,
+                          sku: p.sku,
+                          precio_unitario: p.precio_unitario,
+                          stock_disponible: p.stock_disponible,
+                        });
+                        toast.success("Agregado al carrito");
+                      }}
+                    >
+                      <ShoppingCart className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </section>
+    </PublicLayout>
+  );
+}
