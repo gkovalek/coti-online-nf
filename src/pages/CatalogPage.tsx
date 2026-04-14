@@ -146,35 +146,52 @@ export default function CatalogPage() {
             {productos.map((p) => {
               const CategoryIcon = getCategoryIcon(p.categoria);
               return (
-                <Card key={p.producto_id} className="shadow-sm hover:shadow-md transition-shadow overflow-hidden">
-                  {/* Icono representativo de categoría */}
-                  <div className="h-40 bg-muted flex items-center justify-center rounded-t-lg">
-                    <CategoryIcon className="h-20 w-20 text-primary stroke-[1.5]" />
+                <Card key={p.producto_id} className="rounded-2xl shadow-sm hover:shadow-md transition-shadow overflow-hidden border-border/60">
+                  {/* Category icon with blueprint grid pattern */}
+                  <div className="h-36 relative flex items-center justify-center" style={{ backgroundColor: '#B8C9AA' }}>
+                    <svg className="absolute inset-0 w-full h-full opacity-[0.12]" xmlns="http://www.w3.org/2000/svg">
+                      <defs>
+                        <pattern id={`grid-${p.producto_id}`} width="20" height="20" patternUnits="userSpaceOnUse">
+                          <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#2D4A3E" strokeWidth="0.5" />
+                        </pattern>
+                      </defs>
+                      <rect width="100%" height="100%" fill={`url(#grid-${p.producto_id})`} />
+                    </svg>
+                    <CategoryIcon className="h-16 w-16 stroke-[1.5] relative z-10" style={{ color: '#2D4A3E' }} />
                   </div>
-                  <CardContent className="p-5 flex flex-col gap-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-base leading-tight text-foreground truncate">{p.producto}</h3>
-                        <p className="text-xs text-muted-foreground mt-0.5">{p.sku_norm}</p>
-                      </div>
-                      {p.stock < 20 && (
-                        <Badge variant="destructive" className="text-[10px] shrink-0 ml-2">Stock bajo</Badge>
-                      )}
+
+                  <CardContent className="p-5 flex flex-col gap-2">
+                    {/* Product name + SKU */}
+                    <div>
+                      <h3 className="font-bold text-base leading-snug text-foreground line-clamp-2">{p.producto}</h3>
+                      <p className="text-xs text-muted-foreground/60 mt-0.5 font-mono">{p.sku_norm}</p>
                     </div>
+
                     <p className="text-xs text-muted-foreground">{p.categoria}</p>
-                    <div className="mt-auto pt-3 border-t border-border/50 space-y-3">
+
+                    {/* Price + stock */}
+                    <div className="mt-auto pt-3 border-t border-border/40 space-y-3">
                       <div className="flex items-end justify-between">
                         <div>
-                          <p className="text-2xl font-bold text-foreground">{formatARS(p.precio_venta)}</p>
-                          <p className="text-xs text-muted-foreground">Stock: {p.stock} {p.unidad_medida}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Stock: {p.stock} {p.unidad_medida}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <p className="text-2xl font-bold" style={{ color: '#4A7C59' }}>{formatARS(p.precio_venta)}</p>
+                          {p.stock < 20 && (
+                            <Badge variant="destructive" className="text-[10px] shrink-0">Bajo</Badge>
+                          )}
                         </div>
                       </div>
+
+                      {/* Qty + Add to cart */}
                       <div className="flex items-center gap-2">
-                        <div className="flex items-center border border-border rounded-md">
+                        <div className="flex items-center border border-border rounded-lg">
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8"
+                            className="h-8 w-8 rounded-l-lg rounded-r-none"
                             disabled={getQty(p.producto_id) <= 1}
                             onClick={() => setQty(p.producto_id, getQty(p.producto_id) - 1, p.stock)}
                           >
@@ -184,7 +201,7 @@ export default function CatalogPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8"
+                            className="h-8 w-8 rounded-r-lg rounded-l-none"
                             disabled={getQty(p.producto_id) >= p.stock}
                             onClick={() => setQty(p.producto_id, getQty(p.producto_id) + 1, p.stock)}
                           >
@@ -193,7 +210,7 @@ export default function CatalogPage() {
                         </div>
                         <Button
                           size="sm"
-                          className="flex-1"
+                          className="flex-1 rounded-lg"
                           disabled={p.stock <= 0}
                           onClick={() => {
                             const qty = getQty(p.producto_id);
