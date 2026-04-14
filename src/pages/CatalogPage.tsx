@@ -32,7 +32,7 @@ export default function CatalogPage() {
   
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState("all");
-  const [provFilter, setProvFilter] = useState("all");
+  
   const [sortBy, setSortBy] = useState("nombre");
   const [loading, setLoading] = useState(true);
   const debouncedSearch = useDebounce(search);
