@@ -60,7 +60,7 @@ export default function CatalogPage() {
           style={{ backgroundImage: `url(${heroBackground})` }}
         />
         {/* Dark Overlay */}
-        <div className="absolute inset-0 bg-black/70" />
+        <div className="absolute inset-0 bg-black/55" />
         
         {/* Content */}
         <div className="container text-center relative z-10">
