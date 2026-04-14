@@ -33,7 +33,8 @@ export default function AdminCatalog() {
     let q = supabase.from("productos").select("*, categorias(nombre), proveedores(nombre)").order("nombre");
     if (debouncedSearch) q = q.or(`nombre.ilike.%${debouncedSearch}%,sku_norm.ilike.%${debouncedSearch}%`);
     const { data, error } = await q;
-    console.log("ADMIN CATALOG DATA:", data);
+    console.log("ADMIN CATALOG DATA:", JSON.stringify(data?.[0], null, 2));
+    console.log("ADMIN CATALOG KEYS:", data?.[0] ? Object.keys(data[0]) : "NO DATA");
     console.log("ADMIN CATALOG ERROR:", error);
     if (error) toast.error(`Error cargando productos: ${error.message}`);
     setProductos(data || []);
