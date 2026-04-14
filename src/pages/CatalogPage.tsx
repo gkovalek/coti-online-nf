@@ -10,6 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Search, ShoppingCart, ArrowRight, Box, Layers, Package, Hash, Triangle, LayoutGrid, Construction, Plus, Minus } from "lucide-react";
+import { Link } from "react-router-dom";
+import { toast } from "sonner";
+import heroBackground from "@/assets/hero-concrete.jpeg";
 
 const getCategoryIcon = (categoryName: string) => {
   const name = categoryName?.toLowerCase() || "";
