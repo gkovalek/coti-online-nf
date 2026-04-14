@@ -153,14 +153,15 @@ export default function CatalogPage() {
                   <div
                     className="h-44 relative flex items-center justify-center overflow-hidden"
                     style={{
-                      backgroundColor: '#B8C9AA',
-                      backgroundImage: `
-                        linear-gradient(rgba(45,74,62,0.08) 1px, transparent 1px),
-                        linear-gradient(90deg, rgba(45,74,62,0.08) 1px, transparent 1px),
-                        linear-gradient(rgba(45,74,62,0.04) 1px, transparent 1px),
-                        linear-gradient(90deg, rgba(45,74,62,0.04) 1px, transparent 1px)
+                      background: `
+                        radial-gradient(ellipse at 50% 40%, rgba(200,215,185,0.6) 0%, rgba(184,201,170,0) 70%),
+                        linear-gradient(rgba(45,74,62,0.12) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(45,74,62,0.12) 1px, transparent 1px),
+                        linear-gradient(rgba(45,74,62,0.05) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(45,74,62,0.05) 1px, transparent 1px),
+                        #B8C9AA
                       `,
-                      backgroundSize: '100px 100px, 100px 100px, 20px 20px, 20px 20px',
+                      backgroundSize: '100% 100%, 50px 50px, 50px 50px, 10px 10px, 10px 10px',
                     }}
                   >
                     {/* Corner dimension marks - top left */}
