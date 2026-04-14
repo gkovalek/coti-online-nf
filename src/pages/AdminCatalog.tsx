@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -24,8 +24,8 @@ export default function AdminCatalog() {
   const [editing, setEditing] = useState<any>(null);
   const debouncedSearch = useDebounce(search);
   const [form, setForm] = useState({
-    nombre: "", sku: "", descripcion: "", categoria_id: "", proveedor_id: "",
-    precio_unitario: "", stock_disponible: "", unidad_medida: "unidad", activo: true,
+    nombre: "", sku_norm: "", descripcion: "", categoria_id: "", proveedor_id: "",
+    precio_venta: "", stock: "", unidad_medida: "unidad", status: "activo",
   });
 
   const loadProducts = async () => {
@@ -33,9 +33,6 @@ export default function AdminCatalog() {
     let q = supabase.from("productos").select("*, categorias(nombre), proveedores(nombre)").order("nombre");
     if (debouncedSearch) q = q.or(`nombre.ilike.%${debouncedSearch}%,sku_norm.ilike.%${debouncedSearch}%`);
     const { data, error } = await q;
-    console.log("ADMIN CATALOG DATA:", JSON.stringify(data?.[0], null, 2));
-    console.log("ADMIN CATALOG KEYS:", data?.[0] ? Object.keys(data[0]) : "NO DATA");
-    console.log("ADMIN CATALOG ERROR:", error);
     if (error) toast.error(`Error cargando productos: ${error.message}`);
     setProductos(data || []);
     setLoading(false);
@@ -51,26 +48,26 @@ export default function AdminCatalog() {
   const openEdit = (p: any) => {
     setEditing(p);
     setForm({
-      nombre: p.nombre, sku: p.sku, descripcion: p.descripcion || "",
+      nombre: p.nombre, sku_norm: p.sku_norm || "", descripcion: p.descripcion || "",
       categoria_id: p.categoria_id, proveedor_id: p.proveedor_id,
-      precio_unitario: String(p.precio_unitario), stock_disponible: String(p.stock_disponible),
-      unidad_medida: p.unidad_medida || "unidad", activo: p.activo,
+      precio_venta: String(p.precio_venta ?? ""), stock: String(p.stock ?? ""),
+      unidad_medida: p.unidad_medida || "unidad", status: p.status || "activo",
     });
     setDialogOpen(true);
   };
 
   const openNew = () => {
     setEditing(null);
-    setForm({ nombre: "", sku: "", descripcion: "", categoria_id: "", proveedor_id: "", precio_unitario: "", stock_disponible: "", unidad_medida: "unidad", activo: true });
+    setForm({ nombre: "", sku_norm: "", descripcion: "", categoria_id: "", proveedor_id: "", precio_venta: "", stock: "", unidad_medida: "unidad", status: "activo" });
     setDialogOpen(true);
   };
 
   const handleSave = async () => {
     const payload = {
-      nombre: form.nombre, sku: form.sku, descripcion: form.descripcion,
+      nombre: form.nombre, sku_norm: form.sku_norm, descripcion: form.descripcion,
       categoria_id: form.categoria_id, proveedor_id: form.proveedor_id,
-      precio_unitario: parseFloat(form.precio_unitario), stock_disponible: parseInt(form.stock_disponible),
-      unidad_medida: form.unidad_medida, activo: form.activo,
+      precio_venta: parseFloat(form.precio_venta), stock: parseInt(form.stock),
+      unidad_medida: form.unidad_medida, status: form.status,
     };
     if (editing) {
       const { error } = await supabase.from("productos").update(payload).eq("id", editing.id);
@@ -117,15 +114,19 @@ export default function AdminCatalog() {
               ) : productos.map((p) => (
                 <TableRow key={p.id}>
                   <TableCell className="font-medium">{p.nombre}</TableCell>
-                  <TableCell className="text-xs text-muted-foreground">{p.sku}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">{p.sku_norm}</TableCell>
                   <TableCell>{p.categorias?.nombre}</TableCell>
                   <TableCell>{p.proveedores?.nombre}</TableCell>
-                  <TableCell className="text-right">{formatARS(p.precio_unitario)}</TableCell>
+                  <TableCell className="text-right">{formatARS(p.precio_venta)}</TableCell>
                   <TableCell className="text-right">
-                    {p.stock_disponible}
-                    {p.stock_disponible < 20 && <Badge variant="destructive" className="ml-2 text-[10px]">Bajo</Badge>}
+                    {p.stock} {p.unidad_medida}
+                    {p.stock < 20 && <Badge variant="destructive" className="ml-2 text-[10px]">Bajo</Badge>}
                   </TableCell>
-                  <TableCell><Badge variant={p.activo ? "default" : "secondary"}>{p.activo ? "Activo" : "Inactivo"}</Badge></TableCell>
+                  <TableCell>
+                    <Badge variant={p.status === "activo" ? "default" : "secondary"}>
+                      {p.status === "activo" ? "Activo" : "Inactivo"}
+                    </Badge>
+                  </TableCell>
                   <TableCell><Button size="icon" variant="ghost" onClick={() => openEdit(p)}><Pencil className="h-4 w-4" /></Button></TableCell>
                 </TableRow>
               ))}
@@ -139,7 +140,7 @@ export default function AdminCatalog() {
           <DialogHeader><DialogTitle>{editing ? "Editar Producto" : "Nuevo Producto"}</DialogTitle></DialogHeader>
           <div className="grid gap-3">
             <Input placeholder="Nombre" value={form.nombre} onChange={(e) => handleField("nombre", e.target.value)} />
-            <Input placeholder="SKU" value={form.sku} onChange={(e) => handleField("sku", e.target.value)} />
+            <Input placeholder="SKU" value={form.sku_norm} onChange={(e) => handleField("sku_norm", e.target.value)} />
             <Textarea placeholder="Descripción" value={form.descripcion} onChange={(e) => handleField("descripcion", e.target.value)} />
             <div className="grid grid-cols-2 gap-3">
               <Select value={form.categoria_id} onValueChange={(v) => handleField("categoria_id", v)}>
@@ -152,10 +153,17 @@ export default function AdminCatalog() {
               </Select>
             </div>
             <div className="grid grid-cols-3 gap-3">
-              <Input type="number" placeholder="Precio" value={form.precio_unitario} onChange={(e) => handleField("precio_unitario", e.target.value)} />
-              <Input type="number" placeholder="Stock" value={form.stock_disponible} onChange={(e) => handleField("stock_disponible", e.target.value)} />
+              <Input type="number" placeholder="Precio" value={form.precio_venta} onChange={(e) => handleField("precio_venta", e.target.value)} />
+              <Input type="number" placeholder="Stock" value={form.stock} onChange={(e) => handleField("stock", e.target.value)} />
               <Input placeholder="Unidad" value={form.unidad_medida} onChange={(e) => handleField("unidad_medida", e.target.value)} />
             </div>
+            <Select value={form.status} onValueChange={(v) => handleField("status", v)}>
+              <SelectTrigger><SelectValue placeholder="Estado" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="activo">Activo</SelectItem>
+                <SelectItem value="inactivo">Inactivo</SelectItem>
+              </SelectContent>
+            </Select>
             <Button onClick={handleSave}>{editing ? "Guardar Cambios" : "Crear Producto"}</Button>
           </div>
         </DialogContent>
