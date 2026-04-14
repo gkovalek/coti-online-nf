@@ -9,21 +9,17 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Search, ShoppingCart, ArrowRight, HardHat, BrickWall, Paintbrush, Wrench, Zap, Hammer, Circle, Plus, Minus } from "lucide-react";
-import { Link } from "react-router-dom";
-import { toast } from "sonner";
-import heroBackground from "@/assets/hero-concrete.jpeg";
+import { Search, ShoppingCart, ArrowRight, Box, Layers, Package, Hash, Triangle, LayoutGrid, Construction, Plus, Minus } from "lucide-react";
 
-// Mapeo de categorías a iconos de Lucide
 const getCategoryIcon = (categoryName: string) => {
   const name = categoryName?.toLowerCase() || "";
-  if (name.includes("seguridad") || name.includes("protección")) return HardHat;
-  if (name.includes("mampostería") || name.includes("ladrillo") || name.includes("bloque")) return BrickWall;
-  if (name.includes("pintura") || name.includes("acabado")) return Paintbrush;
-  if (name.includes("plomería") || name.includes("herramienta")) return Wrench;
-  if (name.includes("eléctric") || name.includes("cable")) return Zap;
-  if (name.includes("carpintería") || name.includes("madera")) return Hammer;
-  return Circle;
+  if (name.includes("hierro") || name.includes("perfil") || name.includes("caño")) return Box;
+  if (name.includes("chapa") || name.includes("cubierta")) return Layers;
+  if (name.includes("cemento") || name.includes("cal") || name.includes("adhesivo")) return Package;
+  if (name.includes("malla") || name.includes("alambre")) return Hash;
+  if (name.includes("árido") || name.includes("arena") || name.includes("piedra")) return Triangle;
+  if (name.includes("ladrillo") || name.includes("bloque")) return LayoutGrid;
+  return Construction;
 };
 
 export default function CatalogPage() {
