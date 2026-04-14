@@ -9,16 +9,17 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Search, ShoppingCart, ArrowRight, Box, Layers, Package, Hash, Triangle, LayoutGrid, Construction, Plus, Minus } from "lucide-react";
+import { Search, ShoppingCart, ArrowRight, Construction, Grid3x3, Layers, StretchHorizontal, Wrench, Package, Hash, Triangle, LayoutGrid, Plus, Minus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import heroBackground from "@/assets/hero-concrete.jpeg";
 
 const getCategoryIcon = (categoryName: string) => {
   const name = categoryName?.toLowerCase() || "";
-  if (name.includes("hierro") || name.includes("perfil") || name.includes("caño")) return Box;
-  if (name.includes("chapa") || name.includes("cubierta")) return Layers;
-  if (name.includes("cemento") || name.includes("cal") || name.includes("adhesivo")) return Package;
+  if (name.includes("hierro") || name.includes("perfil") || name.includes("caño")) return Grid3x3;
+  if (name.includes("chapa") || name.includes("cubierta")) return StretchHorizontal;
+  if (name.includes("cemento") || name.includes("cal") || name.includes("adhesivo") || name.includes("bolsa")) return Layers;
+  if (name.includes("herramienta")) return Wrench;
   if (name.includes("malla") || name.includes("alambre")) return Hash;
   if (name.includes("árido") || name.includes("arena") || name.includes("piedra")) return Triangle;
   if (name.includes("ladrillo") || name.includes("bloque")) return LayoutGrid;
@@ -152,14 +153,15 @@ export default function CatalogPage() {
                   <div
                     className="h-44 relative flex items-center justify-center overflow-hidden"
                     style={{
-                      backgroundColor: '#B8C9AA',
-                      backgroundImage: `
-                        linear-gradient(rgba(45,74,62,0.08) 1px, transparent 1px),
-                        linear-gradient(90deg, rgba(45,74,62,0.08) 1px, transparent 1px),
-                        linear-gradient(rgba(45,74,62,0.04) 1px, transparent 1px),
-                        linear-gradient(90deg, rgba(45,74,62,0.04) 1px, transparent 1px)
+                      background: `
+                        radial-gradient(ellipse at 50% 40%, rgba(200,215,185,0.6) 0%, rgba(184,201,170,0) 70%),
+                        linear-gradient(rgba(45,74,62,0.12) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(45,74,62,0.12) 1px, transparent 1px),
+                        linear-gradient(rgba(45,74,62,0.05) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(45,74,62,0.05) 1px, transparent 1px),
+                        #B8C9AA
                       `,
-                      backgroundSize: '100px 100px, 100px 100px, 20px 20px, 20px 20px',
+                      backgroundSize: '100% 100%, 50px 50px, 50px 50px, 10px 10px, 10px 10px',
                     }}
                   >
                     {/* Corner dimension marks - top left */}
