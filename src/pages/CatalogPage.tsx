@@ -162,11 +162,7 @@ export default function CatalogPage() {
                         <Badge variant="destructive" className="text-[10px] shrink-0 ml-2">Stock bajo</Badge>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <span>{p.categoria}</span>
-                      <span>·</span>
-                      <span>{p.proveedor}</span>
-                    </div>
+                    <p className="text-xs text-muted-foreground">{p.categoria}</p>
                     <div className="mt-auto pt-3 border-t border-border/50 space-y-3">
                       <div className="flex items-end justify-between">
                         <div>
