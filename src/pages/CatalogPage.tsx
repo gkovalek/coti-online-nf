@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Search, ShoppingCart, ArrowRight, HardHat, BrickWall, Paintbrush, Wrench, Zap, Hammer, Circle } from "lucide-react";
+import { Search, ShoppingCart, ArrowRight, HardHat, BrickWall, Paintbrush, Wrench, Zap, Hammer, Circle, Plus, Minus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import heroBackground from "@/assets/hero-concrete.jpeg";
@@ -35,8 +35,14 @@ export default function CatalogPage() {
   
   const [sortBy, setSortBy] = useState("nombre");
   const [loading, setLoading] = useState(true);
+  const [quantities, setQuantities] = useState<Record<string, number>>({});
   const debouncedSearch = useDebounce(search);
   const addItem = useCart((s) => s.addItem);
+
+  const getQty = (id: string) => quantities[id] || 1;
+  const setQty = (id: string, val: number, max: number) => {
+    setQuantities((prev) => ({ ...prev, [id]: Math.max(1, Math.min(val, max)) }));
+  };
 
   useEffect(() => {
     supabase.from("categorias").select("id, nombre").then(({ data }) => setCategorias(data || []));
@@ -161,27 +167,57 @@ export default function CatalogPage() {
                       <span>·</span>
                       <span>{p.proveedor}</span>
                     </div>
-                    <div className="mt-auto flex items-end justify-between pt-3 border-t border-border/50">
-                      <div>
-                        <p className="text-2xl font-bold text-foreground">{formatARS(p.precio_venta)}</p>
-                        <p className="text-xs text-muted-foreground">Stock: {p.stock} {p.unidad_medida}</p>
+                    <div className="mt-auto pt-3 border-t border-border/50 space-y-3">
+                      <div className="flex items-end justify-between">
+                        <div>
+                          <p className="text-2xl font-bold text-foreground">{formatARS(p.precio_venta)}</p>
+                          <p className="text-xs text-muted-foreground">Stock: {p.stock} {p.unidad_medida}</p>
+                        </div>
                       </div>
-                      <Button
-                        size="sm"
-                        disabled={p.stock <= 0}
-                        onClick={() => {
-                          addItem({
-                            producto_id: p.producto_id,
-                            nombre: p.producto,
-                            sku: p.sku_norm,
-                            precio_unitario: p.precio_venta,
-                            stock_disponible: p.stock,
-                          });
-                          toast.success("Agregado al carrito");
-                        }}
-                      >
-                        <ShoppingCart className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center border border-border rounded-md">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            disabled={getQty(p.producto_id) <= 1}
+                            onClick={() => setQty(p.producto_id, getQty(p.producto_id) - 1, p.stock)}
+                          >
+                            <Minus className="h-3 w-3" />
+                          </Button>
+                          <span className="w-8 text-center text-sm font-medium">{getQty(p.producto_id)}</span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            disabled={getQty(p.producto_id) >= p.stock}
+                            onClick={() => setQty(p.producto_id, getQty(p.producto_id) + 1, p.stock)}
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                        </div>
+                        <Button
+                          size="sm"
+                          className="flex-1"
+                          disabled={p.stock <= 0}
+                          onClick={() => {
+                            const qty = getQty(p.producto_id);
+                            for (let i = 0; i < qty; i++) {
+                              addItem({
+                                producto_id: p.producto_id,
+                                nombre: p.producto,
+                                sku: p.sku_norm,
+                                precio_unitario: p.precio_venta,
+                                stock_disponible: p.stock,
+                              });
+                            }
+                            setQty(p.producto_id, 1, p.stock);
+                            toast.success(`${qty} item(s) agregado(s) al carrito`);
+                          }}
+                        >
+                          <ShoppingCart className="h-4 w-4 mr-1" /> Agregar
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
