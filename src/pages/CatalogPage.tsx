@@ -9,10 +9,22 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Search, ShoppingCart, ArrowRight } from "lucide-react";
+import { Search, ShoppingCart, ArrowRight, HardHat, BrickWall, Paintbrush, Wrench, Zap, Hammer, Circle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import heroBackground from "@/assets/hero-concrete.jpeg";
+
+// Mapeo de categorías a iconos de Lucide
+const getCategoryIcon = (categoryName: string) => {
+  const name = categoryName?.toLowerCase() || "";
+  if (name.includes("seguridad") || name.includes("protección")) return HardHat;
+  if (name.includes("mampostería") || name.includes("ladrillo") || name.includes("bloque")) return BrickWall;
+  if (name.includes("pintura") || name.includes("acabado")) return Paintbrush;
+  if (name.includes("plomería") || name.includes("herramienta")) return Wrench;
+  if (name.includes("eléctric") || name.includes("cable")) return Zap;
+  if (name.includes("carpintería") || name.includes("madera")) return Hammer;
+  return Circle;
+};
 
 export default function CatalogPage() {
   const [productos, setProductos] = useState<any[]>([]);
