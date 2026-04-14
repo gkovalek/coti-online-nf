@@ -29,7 +29,7 @@ const getCategoryIcon = (categoryName: string) => {
 export default function CatalogPage() {
   const [productos, setProductos] = useState<any[]>([]);
   const [categorias, setCategorias] = useState<any[]>([]);
-  const [proveedores, setProveedores] = useState<any[]>([]);
+  
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState("all");
   const [provFilter, setProvFilter] = useState("all");
