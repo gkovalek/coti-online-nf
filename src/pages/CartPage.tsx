@@ -54,7 +54,6 @@ export default function CartPage() {
         producto_id: i.producto_id,
         cantidad: i.cantidad,
         precio_unitario: i.precio_unitario,
-        subtotal: i.precio_unitario * i.cantidad,
       }));
       const { error: itemsErr } = await supabase.from("cotizacion_items").insert(cotItems);
       if (itemsErr) throw itemsErr;
