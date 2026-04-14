@@ -145,49 +145,116 @@ export default function CatalogPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {productos.map((p) => {
               const CategoryIcon = getCategoryIcon(p.categoria);
+              const dims = [`${(p.producto_id?.charCodeAt(0) % 90) + 100}mm`, `${(p.producto_id?.charCodeAt(1) % 50) + 10}.${(p.producto_id?.charCodeAt(2) % 9)}`, `${(p.producto_id?.charCodeAt(3) % 200) + 50}mm`, `Ø${(p.producto_id?.charCodeAt(4) % 30) + 5}`];
               return (
-                <Card key={p.producto_id} className="rounded-2xl shadow-sm hover:shadow-md transition-shadow overflow-hidden border-border/60">
-                  {/* Category icon with blueprint grid pattern */}
-                  <div className="h-36 relative flex items-center justify-center" style={{ backgroundColor: '#B8C9AA' }}>
-                    <svg className="absolute inset-0 w-full h-full opacity-[0.12]" xmlns="http://www.w3.org/2000/svg">
-                      <defs>
-                        <pattern id={`grid-${p.producto_id}`} width="20" height="20" patternUnits="userSpaceOnUse">
-                          <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#2D4A3E" strokeWidth="0.5" />
-                        </pattern>
-                      </defs>
-                      <rect width="100%" height="100%" fill={`url(#grid-${p.producto_id})`} />
-                    </svg>
-                    <CategoryIcon className="h-16 w-16 stroke-[1.5] relative z-10" style={{ color: '#2D4A3E' }} />
+                <Card key={p.producto_id} className="rounded-2xl shadow-md hover:shadow-lg transition-all overflow-hidden" style={{ border: '1px solid rgba(45, 74, 62, 0.2)' }}>
+                  {/* Blueprint header */}
+                  <div
+                    className="h-44 relative flex items-center justify-center overflow-hidden"
+                    style={{
+                      backgroundColor: '#B8C9AA',
+                      backgroundImage: `
+                        linear-gradient(rgba(45,74,62,0.08) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(45,74,62,0.08) 1px, transparent 1px),
+                        linear-gradient(rgba(45,74,62,0.04) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(45,74,62,0.04) 1px, transparent 1px)
+                      `,
+                      backgroundSize: '100px 100px, 100px 100px, 20px 20px, 20px 20px',
+                    }}
+                  >
+                    {/* Corner dimension marks - top left */}
+                    <div className="absolute top-2 left-2 flex flex-col gap-0.5">
+                      <div className="flex items-center gap-1">
+                        <div className="w-4 h-px" style={{ backgroundColor: 'rgba(45,74,62,0.4)' }} />
+                        <span className="text-[8px] font-mono" style={{ color: 'rgba(45,74,62,0.5)' }}>{dims[0]}</span>
+                      </div>
+                      <div className="flex items-center gap-1 ml-1">
+                        <div className="w-3 h-px" style={{ backgroundColor: 'rgba(45,74,62,0.3)' }} />
+                        <span className="text-[7px] font-mono" style={{ color: 'rgba(45,74,62,0.4)' }}>{dims[1]}</span>
+                      </div>
+                    </div>
+                    {/* Corner tick - top left */}
+                    <div className="absolute top-0 left-0 w-5 h-5">
+                      <div className="absolute top-0 left-0 w-full h-px" style={{ backgroundColor: 'rgba(45,74,62,0.3)' }} />
+                      <div className="absolute top-0 left-0 w-px h-full" style={{ backgroundColor: 'rgba(45,74,62,0.3)' }} />
+                    </div>
+                    {/* Corner tick - top right */}
+                    <div className="absolute top-0 right-0 w-5 h-5">
+                      <div className="absolute top-0 right-0 w-full h-px" style={{ backgroundColor: 'rgba(45,74,62,0.3)' }} />
+                      <div className="absolute top-0 right-0 w-px h-full" style={{ backgroundColor: 'rgba(45,74,62,0.3)' }} />
+                    </div>
+                    {/* Bottom right dimension */}
+                    <div className="absolute bottom-2 right-2 flex flex-col items-end gap-0.5">
+                      <div className="flex items-center gap-1">
+                        <span className="text-[8px] font-mono" style={{ color: 'rgba(45,74,62,0.5)' }}>{dims[2]}</span>
+                        <div className="w-4 h-px" style={{ backgroundColor: 'rgba(45,74,62,0.4)' }} />
+                      </div>
+                      <div className="flex items-center gap-1 mr-1">
+                        <span className="text-[7px] font-mono" style={{ color: 'rgba(45,74,62,0.4)' }}>{dims[3]}</span>
+                        <div className="w-3 h-px" style={{ backgroundColor: 'rgba(45,74,62,0.3)' }} />
+                      </div>
+                    </div>
+                    {/* Corner tick - bottom left */}
+                    <div className="absolute bottom-0 left-0 w-5 h-5">
+                      <div className="absolute bottom-0 left-0 w-full h-px" style={{ backgroundColor: 'rgba(45,74,62,0.3)' }} />
+                      <div className="absolute bottom-0 left-0 w-px h-full" style={{ backgroundColor: 'rgba(45,74,62,0.3)' }} />
+                    </div>
+                    {/* Corner tick - bottom right */}
+                    <div className="absolute bottom-0 right-0 w-5 h-5">
+                      <div className="absolute bottom-0 right-0 w-full h-px" style={{ backgroundColor: 'rgba(45,74,62,0.3)' }} />
+                      <div className="absolute bottom-0 right-0 w-px h-full" style={{ backgroundColor: 'rgba(45,74,62,0.3)' }} />
+                    </div>
+
+                    {/* Horizontal dimension line across center */}
+                    <div className="absolute left-6 right-6 top-[22px] flex items-center">
+                      <div className="h-px flex-1" style={{ backgroundColor: 'rgba(45,74,62,0.15)' }} />
+                      <div className="w-1 h-2 border-l border-t" style={{ borderColor: 'rgba(45,74,62,0.2)' }} />
+                    </div>
+
+                    {/* Icon with circular frame */}
+                    <div className="relative z-10 flex items-center justify-center">
+                      <div
+                        className="w-24 h-24 rounded-full flex items-center justify-center"
+                        style={{
+                          border: '1.5px solid rgba(45,74,62,0.3)',
+                          backgroundColor: 'rgba(184,201,170,0.5)',
+                          boxShadow: 'inset 0 0 20px rgba(45,74,62,0.08), 0 0 15px rgba(45,74,62,0.06)',
+                        }}
+                      >
+                        <CategoryIcon className="h-12 w-12 stroke-[1.2]" style={{ color: '#2D4A3E', filter: 'drop-shadow(0 0 3px rgba(45,74,62,0.2))' }} />
+                      </div>
+                      {/* Cross-hair lines */}
+                      <div className="absolute w-32 h-px" style={{ backgroundColor: 'rgba(45,74,62,0.1)' }} />
+                      <div className="absolute h-32 w-px" style={{ backgroundColor: 'rgba(45,74,62,0.1)' }} />
+                    </div>
+
+                    {/* Scale label */}
+                    <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2">
+                      <span className="text-[7px] font-mono tracking-widest uppercase" style={{ color: 'rgba(45,74,62,0.35)' }}>escala 1:1</span>
+                    </div>
                   </div>
 
                   <CardContent className="p-5 flex flex-col gap-2">
-                    {/* Product name + SKU */}
                     <div>
-                      <h3 className="font-bold text-base leading-snug text-foreground line-clamp-2">{p.producto}</h3>
-                      <p className="text-xs text-muted-foreground/60 mt-0.5 font-mono">{p.sku_norm}</p>
+                      <h3 className="font-semibold text-[15px] leading-snug text-foreground line-clamp-2">{p.producto}</h3>
+                      <p className="text-[11px] text-muted-foreground/50 mt-0.5 font-mono tracking-wide">{p.sku_norm}</p>
                     </div>
 
                     <p className="text-xs text-muted-foreground">{p.categoria}</p>
 
-                    {/* Price + stock */}
                     <div className="mt-auto pt-3 border-t border-border/40 space-y-3">
                       <div className="flex items-end justify-between">
-                        <div>
-                          <p className="text-xs text-muted-foreground">
-                            Stock: {p.stock} {p.unidad_medida}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <p className="text-2xl font-bold" style={{ color: '#4A7C59' }}>{formatARS(p.precio_venta)}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Stock: {p.stock} {p.unidad_medida}
                           {p.stock < 20 && (
-                            <Badge variant="destructive" className="text-[10px] shrink-0">Bajo</Badge>
+                            <Badge variant="destructive" className="text-[9px] ml-2 align-middle">Bajo</Badge>
                           )}
-                        </div>
+                        </p>
+                        <p className="text-2xl font-bold tracking-tight" style={{ color: '#4A7C59' }}>{formatARS(p.precio_venta)}</p>
                       </div>
 
-                      {/* Qty + Add to cart */}
                       <div className="flex items-center gap-2">
-                        <div className="flex items-center border border-border rounded-lg">
+                        <div className="flex items-center rounded-lg" style={{ border: '1px solid rgba(45,74,62,0.2)' }}>
                           <Button
                             variant="ghost"
                             size="icon"
