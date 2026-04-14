@@ -29,10 +29,10 @@ const getCategoryIcon = (categoryName: string) => {
 export default function CatalogPage() {
   const [productos, setProductos] = useState<any[]>([]);
   const [categorias, setCategorias] = useState<any[]>([]);
-  const [proveedores, setProveedores] = useState<any[]>([]);
+  
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState("all");
-  const [provFilter, setProvFilter] = useState("all");
+  
   const [sortBy, setSortBy] = useState("nombre");
   const [loading, setLoading] = useState(true);
   const debouncedSearch = useDebounce(search);
@@ -40,7 +40,6 @@ export default function CatalogPage() {
 
   useEffect(() => {
     supabase.from("categorias").select("id, nombre").then(({ data }) => setCategorias(data || []));
-    supabase.from("proveedores").select("id, nombre").then(({ data }) => setProveedores(data || []));
   }, []);
 
   useEffect(() => {
@@ -50,7 +49,7 @@ export default function CatalogPage() {
       query = query.or(`nombre.ilike.%${debouncedSearch}%,sku.ilike.%${debouncedSearch}%`);
     }
     if (catFilter !== "all") query = query.eq("categoria_id", catFilter);
-    if (provFilter !== "all") query = query.eq("proveedor_id", provFilter);
+    
     if (sortBy === "precio_asc") query = query.order("precio_unitario", { ascending: true });
     else if (sortBy === "precio_desc") query = query.order("precio_unitario", { ascending: false });
     else query = query.order("nombre");
@@ -60,7 +59,7 @@ export default function CatalogPage() {
       setProductos(data || []);
       setLoading(false);
     });
-  }, [debouncedSearch, catFilter, provFilter, sortBy]);
+  }, [debouncedSearch, catFilter, sortBy]);
 
   return (
     <PublicLayout>
@@ -107,13 +106,6 @@ export default function CatalogPage() {
             <SelectContent>
               <SelectItem value="all">Todas las categorías</SelectItem>
               {categorias.map((c) => <SelectItem key={c.id} value={c.id}>{c.nombre}</SelectItem>)}
-            </SelectContent>
-          </Select>
-          <Select value={provFilter} onValueChange={setProvFilter}>
-            <SelectTrigger className="w-full md:w-48"><SelectValue placeholder="Proveedor" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos los proveedores</SelectItem>
-              {proveedores.map((p) => <SelectItem key={p.id} value={p.id}>{p.nombre}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={sortBy} onValueChange={setSortBy}>
