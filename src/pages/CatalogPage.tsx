@@ -75,7 +75,7 @@ export default function CatalogPage() {
               </Button>
             </Link>
             <Link to="/buscar-cotizacion">
-              <Button variant="outline" size="lg" className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10">
+              <Button variant="outline" size="lg" className="border-primary/30 text-primary hover:bg-primary/10 hover:text-primary">
                 Mis Cotizaciones <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
