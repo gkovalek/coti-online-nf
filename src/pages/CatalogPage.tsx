@@ -46,13 +46,13 @@ export default function CatalogPage() {
     setLoading(true);
     let query = supabase.from("vw_catalogo_vigente").select("*");
     if (debouncedSearch) {
-      query = query.or(`nombre.ilike.%${debouncedSearch}%,sku_norm.ilike.%${debouncedSearch}%`);
+      query = query.or(`producto.ilike.%${debouncedSearch}%,sku_norm.ilike.%${debouncedSearch}%`);
     }
-    if (catFilter !== "all") query = query.eq("categoria_id", catFilter);
+    if (catFilter !== "all") query = query.eq("categoria", catFilter);
     
-    if (sortBy === "precio_asc") query = query.order("precio_unitario", { ascending: true });
-    else if (sortBy === "precio_desc") query = query.order("precio_unitario", { ascending: false });
-    else query = query.order("nombre");
+    if (sortBy === "precio_asc") query = query.order("precio_venta", { ascending: true });
+    else if (sortBy === "precio_desc") query = query.order("precio_venta", { ascending: false });
+    else query = query.order("producto");
 
     query.then(({ data, error }) => {
       console.log("CATALOGO DATA:", data);
@@ -112,7 +112,7 @@ export default function CatalogPage() {
             <SelectTrigger className="w-full md:w-48"><SelectValue placeholder="Categoría" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todas las categorías</SelectItem>
-              {categorias.map((c) => <SelectItem key={c.id} value={c.id}>{c.nombre}</SelectItem>)}
+              {categorias.map((c) => <SelectItem key={c.id} value={c.nombre}>{c.nombre}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={sortBy} onValueChange={setSortBy}>
@@ -139,7 +139,7 @@ export default function CatalogPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {productos.map((p) => {
-              const CategoryIcon = getCategoryIcon(p.categoria_nombre);
+              const CategoryIcon = getCategoryIcon(p.categoria);
               return (
                 <Card key={p.producto_id} className="shadow-sm hover:shadow-md transition-shadow overflow-hidden">
                   {/* Icono representativo de categoría */}
@@ -149,34 +149,33 @@ export default function CatalogPage() {
                   <CardContent className="p-5 flex flex-col gap-3">
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-base leading-tight text-foreground truncate">{p.nombre}</h3>
-                        <p className="text-xs text-muted-foreground mt-0.5">{p.sku}</p>
+                        <h3 className="font-bold text-base leading-tight text-foreground truncate">{p.producto}</h3>
+                        <p className="text-xs text-muted-foreground mt-0.5">{p.sku_norm}</p>
                       </div>
-                      {p.stock_disponible < 20 && (
+                      {p.stock < 20 && (
                         <Badge variant="destructive" className="text-[10px] shrink-0 ml-2">Stock bajo</Badge>
                       )}
                     </div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <span>{p.categoria_nombre}</span>
+                      <span>{p.categoria}</span>
                       <span>·</span>
-                      <span>{p.proveedor_nombre}</span>
+                      <span>{p.proveedor}</span>
                     </div>
-                    <p className="text-xs text-muted-foreground line-clamp-2">{p.descripcion}</p>
                     <div className="mt-auto flex items-end justify-between pt-3 border-t border-border/50">
                       <div>
-                        <p className="text-2xl font-bold text-foreground">{formatARS(p.precio_unitario)}</p>
-                        <p className="text-xs text-muted-foreground">Stock: {p.stock_disponible} {p.unidad_medida}</p>
+                        <p className="text-2xl font-bold text-foreground">{formatARS(p.precio_venta)}</p>
+                        <p className="text-xs text-muted-foreground">Stock: {p.stock} {p.unidad_medida}</p>
                       </div>
                       <Button
                         size="sm"
-                        disabled={p.stock_disponible <= 0}
+                        disabled={p.stock <= 0}
                         onClick={() => {
                           addItem({
                             producto_id: p.producto_id,
-                            nombre: p.nombre,
-                            sku: p.sku,
-                            precio_unitario: p.precio_unitario,
-                            stock_disponible: p.stock_disponible,
+                            nombre: p.producto,
+                            sku: p.sku_norm,
+                            precio_unitario: p.precio_venta,
+                            stock_disponible: p.stock,
                           });
                           toast.success("Agregado al carrito");
                         }}
