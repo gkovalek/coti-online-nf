@@ -70,7 +70,7 @@ export default function AdminCatalog() {
       unidad_medida: form.unidad_medida, status: form.status,
     };
     if (editing) {
-      const { error } = await supabase.from("productos").update(payload).eq("id", editing.id);
+      const { error } = await supabase.from("productos").update(payload).eq("id", editing.producto_id);
       if (error) return toast.error(error.message);
       toast.success("Producto actualizado");
     } else {
