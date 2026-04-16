@@ -47,8 +47,8 @@ export default function AdminPriceHistory() {
                 <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">Sin historial</TableCell></TableRow>
               ) : data.map((r, i) => (
                 <TableRow key={i}>
-                  <TableCell className="font-medium">{r.producto_nombre}</TableCell>
-                  <TableCell className="text-xs text-muted-foreground">{r.producto_sku}</TableCell>
+                  <TableCell className="font-medium">{r.producto || "—"}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">{r.sku_norm || "—"}</TableCell>
                   <TableCell className="text-right">{r.precio_anterior != null ? formatARS(r.precio_anterior) : "—"}</TableCell>
                   <TableCell className="text-right">{r.precio_nuevo != null ? formatARS(r.precio_nuevo) : "—"}</TableCell>
                   <TableCell className="text-right">{r.stock_anterior ?? "—"}</TableCell>
