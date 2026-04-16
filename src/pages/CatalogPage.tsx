@@ -39,7 +39,7 @@ export default function CatalogPage() {
 
   useEffect(() => {
     setLoading(true);
-    let query = supabase.from("vw_catalogo_vigente").select("*");
+    let query = supabase.from("vw_catalogo_vigente_img").select("*");
     if (debouncedSearch) {
       query = query.or(`producto.ilike.%${debouncedSearch}%,sku_norm.ilike.%${debouncedSearch}%`);
     }
@@ -137,16 +137,25 @@ export default function CatalogPage() {
               return (
                 <Card key={p.producto_id} className="rounded-2xl shadow-md hover:shadow-lg transition-all overflow-hidden" style={{ border: '1px solid rgba(45, 74, 62, 0.2)' }}>
                   {/* Product image */}
-                  <div className="bg-white">
+                  {p.imagen_url ? (
                     <img
-                      src={p.imagen_url || "/placeholder.svg"}
+                      src={p.imagen_url}
                       alt={p.producto}
-                      className="w-full aspect-square object-cover rounded-t-2xl bg-white"
+                      className="w-full aspect-square object-contain rounded-t-2xl bg-white p-4"
                       onError={(e) => {
-                        e.currentTarget.src = "/placeholder.svg";
+                        const parent = e.currentTarget.parentElement!;
+                        e.currentTarget.remove();
+                        const fallback = document.createElement('div');
+                        fallback.className = 'w-full aspect-square rounded-t-2xl bg-white flex items-center justify-center text-sm text-muted-foreground';
+                        fallback.textContent = 'Sin imagen';
+                        parent.prepend(fallback);
                       }}
                     />
-                  </div>
+                  ) : (
+                    <div className="w-full aspect-square rounded-t-2xl bg-white flex items-center justify-center text-sm text-muted-foreground">
+                      Sin imagen
+                    </div>
+                  )}
 
                   <CardContent className="p-5 flex flex-col gap-2">
                     <div>

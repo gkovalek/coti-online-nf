@@ -30,8 +30,8 @@ export default function AdminCatalog() {
 
   const loadProducts = async () => {
     setLoading(true);
-    let q = supabase.from("productos").select("*, categorias(nombre), proveedores(nombre)").order("nombre");
-    if (debouncedSearch) q = q.or(`nombre.ilike.%${debouncedSearch}%,sku_norm.ilike.%${debouncedSearch}%`);
+    let q = supabase.from("vw_catalogo_vigente_img").select("*").order("producto");
+    if (debouncedSearch) q = q.or(`producto.ilike.%${debouncedSearch}%,sku_norm.ilike.%${debouncedSearch}%`);
     const { data, error } = await q;
     if (error) toast.error(`Error cargando productos: ${error.message}`);
     setProductos(data || []);
@@ -48,7 +48,7 @@ export default function AdminCatalog() {
   const openEdit = (p: any) => {
     setEditing(p);
     setForm({
-      nombre: p.nombre, sku_norm: p.sku_norm || "", descripcion: p.descripcion || "",
+      nombre: p.producto, sku_norm: p.sku_norm || "", descripcion: "",
       categoria_id: p.categoria_id, proveedor_id: p.proveedor_id,
       precio_venta: String(p.precio_venta ?? ""), stock: String(p.stock ?? ""),
       unidad_medida: p.unidad_medida || "unidad", status: p.status || "activo",
@@ -70,7 +70,7 @@ export default function AdminCatalog() {
       unidad_medida: form.unidad_medida, status: form.status,
     };
     if (editing) {
-      const { error } = await supabase.from("productos").update(payload).eq("id", editing.id);
+      const { error } = await supabase.from("productos").update(payload).eq("id", editing.producto_id);
       if (error) return toast.error(error.message);
       toast.success("Producto actualizado");
     } else {
@@ -113,19 +113,23 @@ export default function AdminCatalog() {
               ) : productos.length === 0 ? (
                 <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">Sin productos</TableCell></TableRow>
               ) : productos.map((p) => (
-                <TableRow key={p.id}>
+                <TableRow key={p.producto_id}>
                   <TableCell>
-                    <img
-                      src={p.imagen_url || "/placeholder.svg"}
-                      alt={p.nombre}
-                      className="w-10 h-10 rounded object-cover bg-white"
-                      onError={(e) => { e.currentTarget.src = "/placeholder.svg"; }}
-                    />
+                    {p.imagen_url ? (
+                      <img
+                        src={p.imagen_url}
+                        alt={p.producto}
+                        className="w-10 h-10 rounded object-cover bg-white"
+                        onError={(e) => { e.currentTarget.style.display = "none"; }}
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded bg-muted flex items-center justify-center text-[9px] text-muted-foreground">N/A</div>
+                    )}
                   </TableCell>
-                  <TableCell className="font-medium">{p.nombre}</TableCell>
+                  <TableCell className="font-medium">{p.producto}</TableCell>
                   <TableCell className="text-xs text-muted-foreground">{p.sku_norm}</TableCell>
-                  <TableCell>{p.categorias?.nombre}</TableCell>
-                  <TableCell>{p.proveedores?.nombre}</TableCell>
+                  <TableCell>{p.categoria}</TableCell>
+                  <TableCell>{p.proveedor}</TableCell>
                   <TableCell className="text-right">{formatARS(p.precio_venta)}</TableCell>
                   <TableCell className="text-right">
                     {p.stock} {p.unidad_medida}
