@@ -134,8 +134,6 @@ export default function CatalogPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {productos.map((p) => {
-              const CategoryIcon = getCategoryIcon(p.categoria);
-              const dims = [`${(p.producto_id?.charCodeAt(0) % 90) + 100}mm`, `${(p.producto_id?.charCodeAt(1) % 50) + 10}.${(p.producto_id?.charCodeAt(2) % 9)}`, `${(p.producto_id?.charCodeAt(3) % 200) + 50}mm`, `Ø${(p.producto_id?.charCodeAt(4) % 30) + 5}`];
               return (
                 <Card key={p.producto_id} className="rounded-2xl shadow-md hover:shadow-lg transition-all overflow-hidden" style={{ border: '1px solid rgba(45, 74, 62, 0.2)' }}>
                   {/* Product image */}
