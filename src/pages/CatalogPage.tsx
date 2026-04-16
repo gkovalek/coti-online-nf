@@ -149,91 +149,16 @@ export default function CatalogPage() {
               const dims = [`${(p.producto_id?.charCodeAt(0) % 90) + 100}mm`, `${(p.producto_id?.charCodeAt(1) % 50) + 10}.${(p.producto_id?.charCodeAt(2) % 9)}`, `${(p.producto_id?.charCodeAt(3) % 200) + 50}mm`, `Ø${(p.producto_id?.charCodeAt(4) % 30) + 5}`];
               return (
                 <Card key={p.producto_id} className="rounded-2xl shadow-md hover:shadow-lg transition-all overflow-hidden" style={{ border: '1px solid rgba(45, 74, 62, 0.2)' }}>
-                  {/* Blueprint header */}
-                  <div
-                    className="h-44 relative flex items-center justify-center overflow-hidden"
-                    style={{
-                      background: `
-                        radial-gradient(ellipse at 50% 40%, rgba(200,215,185,0.6) 0%, rgba(184,201,170,0) 70%),
-                        linear-gradient(rgba(45,74,62,0.12) 1px, transparent 1px),
-                        linear-gradient(90deg, rgba(45,74,62,0.12) 1px, transparent 1px),
-                        linear-gradient(rgba(45,74,62,0.05) 1px, transparent 1px),
-                        linear-gradient(90deg, rgba(45,74,62,0.05) 1px, transparent 1px),
-                        #B8C9AA
-                      `,
-                      backgroundSize: '100% 100%, 50px 50px, 50px 50px, 10px 10px, 10px 10px',
-                    }}
-                  >
-                    {/* Corner dimension marks - top left */}
-                    <div className="absolute top-2 left-2 flex flex-col gap-0.5">
-                      <div className="flex items-center gap-1">
-                        <div className="w-4 h-px" style={{ backgroundColor: 'rgba(45,74,62,0.4)' }} />
-                        <span className="text-[8px] font-mono" style={{ color: 'rgba(45,74,62,0.5)' }}>{dims[0]}</span>
-                      </div>
-                      <div className="flex items-center gap-1 ml-1">
-                        <div className="w-3 h-px" style={{ backgroundColor: 'rgba(45,74,62,0.3)' }} />
-                        <span className="text-[7px] font-mono" style={{ color: 'rgba(45,74,62,0.4)' }}>{dims[1]}</span>
-                      </div>
-                    </div>
-                    {/* Corner tick - top left */}
-                    <div className="absolute top-0 left-0 w-5 h-5">
-                      <div className="absolute top-0 left-0 w-full h-px" style={{ backgroundColor: 'rgba(45,74,62,0.3)' }} />
-                      <div className="absolute top-0 left-0 w-px h-full" style={{ backgroundColor: 'rgba(45,74,62,0.3)' }} />
-                    </div>
-                    {/* Corner tick - top right */}
-                    <div className="absolute top-0 right-0 w-5 h-5">
-                      <div className="absolute top-0 right-0 w-full h-px" style={{ backgroundColor: 'rgba(45,74,62,0.3)' }} />
-                      <div className="absolute top-0 right-0 w-px h-full" style={{ backgroundColor: 'rgba(45,74,62,0.3)' }} />
-                    </div>
-                    {/* Bottom right dimension */}
-                    <div className="absolute bottom-2 right-2 flex flex-col items-end gap-0.5">
-                      <div className="flex items-center gap-1">
-                        <span className="text-[8px] font-mono" style={{ color: 'rgba(45,74,62,0.5)' }}>{dims[2]}</span>
-                        <div className="w-4 h-px" style={{ backgroundColor: 'rgba(45,74,62,0.4)' }} />
-                      </div>
-                      <div className="flex items-center gap-1 mr-1">
-                        <span className="text-[7px] font-mono" style={{ color: 'rgba(45,74,62,0.4)' }}>{dims[3]}</span>
-                        <div className="w-3 h-px" style={{ backgroundColor: 'rgba(45,74,62,0.3)' }} />
-                      </div>
-                    </div>
-                    {/* Corner tick - bottom left */}
-                    <div className="absolute bottom-0 left-0 w-5 h-5">
-                      <div className="absolute bottom-0 left-0 w-full h-px" style={{ backgroundColor: 'rgba(45,74,62,0.3)' }} />
-                      <div className="absolute bottom-0 left-0 w-px h-full" style={{ backgroundColor: 'rgba(45,74,62,0.3)' }} />
-                    </div>
-                    {/* Corner tick - bottom right */}
-                    <div className="absolute bottom-0 right-0 w-5 h-5">
-                      <div className="absolute bottom-0 right-0 w-full h-px" style={{ backgroundColor: 'rgba(45,74,62,0.3)' }} />
-                      <div className="absolute bottom-0 right-0 w-px h-full" style={{ backgroundColor: 'rgba(45,74,62,0.3)' }} />
-                    </div>
-
-                    {/* Horizontal dimension line across center */}
-                    <div className="absolute left-6 right-6 top-[22px] flex items-center">
-                      <div className="h-px flex-1" style={{ backgroundColor: 'rgba(45,74,62,0.15)' }} />
-                      <div className="w-1 h-2 border-l border-t" style={{ borderColor: 'rgba(45,74,62,0.2)' }} />
-                    </div>
-
-                    {/* Icon with circular frame */}
-                    <div className="relative z-10 flex items-center justify-center">
-                      <div
-                        className="w-24 h-24 rounded-full flex items-center justify-center"
-                        style={{
-                          border: '1.5px solid rgba(45,74,62,0.3)',
-                          backgroundColor: 'rgba(184,201,170,0.5)',
-                          boxShadow: 'inset 0 0 20px rgba(45,74,62,0.08), 0 0 15px rgba(45,74,62,0.06)',
-                        }}
-                      >
-                        <CategoryIcon className="h-12 w-12 stroke-[1.2]" style={{ color: '#2D4A3E', filter: 'drop-shadow(0 0 3px rgba(45,74,62,0.2))' }} />
-                      </div>
-                      {/* Cross-hair lines */}
-                      <div className="absolute w-32 h-px" style={{ backgroundColor: 'rgba(45,74,62,0.1)' }} />
-                      <div className="absolute h-32 w-px" style={{ backgroundColor: 'rgba(45,74,62,0.1)' }} />
-                    </div>
-
-                    {/* Scale label */}
-                    <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2">
-                      <span className="text-[7px] font-mono tracking-widest uppercase" style={{ color: 'rgba(45,74,62,0.35)' }}>escala 1:1</span>
-                    </div>
+                  {/* Product image */}
+                  <div className="bg-white">
+                    <img
+                      src={p.imagen_url || "/placeholder.svg"}
+                      alt={p.producto}
+                      className="w-full aspect-square object-cover rounded-t-2xl bg-white"
+                      onError={(e) => {
+                        e.currentTarget.src = "/placeholder.svg";
+                      }}
+                    />
                   </div>
 
                   <CardContent className="p-5 flex flex-col gap-2">
@@ -284,13 +209,14 @@ export default function CatalogPage() {
                           onClick={() => {
                             const qty = getQty(p.producto_id);
                             for (let i = 0; i < qty; i++) {
-                              addItem({
-                                producto_id: p.producto_id,
-                                nombre: p.producto,
-                                sku: p.sku_norm,
-                                precio_unitario: p.precio_venta,
-                                stock_disponible: p.stock,
-                              });
+                            addItem({
+                              producto_id: p.producto_id,
+                              nombre: p.producto,
+                              sku: p.sku_norm,
+                              precio_unitario: p.precio_venta,
+                              stock_disponible: p.stock,
+                              imagen_url: p.imagen_url,
+                            });
                             }
                             setQty(p.producto_id, 1, p.stock);
                             toast.success(`${qty} item(s) agregado(s) al carrito`);

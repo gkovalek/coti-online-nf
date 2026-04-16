@@ -96,6 +96,7 @@ export default function AdminCatalog() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Imagen</TableHead>
                 <TableHead>Nombre</TableHead>
                 <TableHead>SKU</TableHead>
                 <TableHead>Categoría</TableHead>
@@ -108,11 +109,19 @@ export default function AdminCatalog() {
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Cargando...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">Cargando...</TableCell></TableRow>
               ) : productos.length === 0 ? (
-                <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Sin productos</TableCell></TableRow>
+                <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">Sin productos</TableCell></TableRow>
               ) : productos.map((p) => (
                 <TableRow key={p.id}>
+                  <TableCell>
+                    <img
+                      src={p.imagen_url || "/placeholder.svg"}
+                      alt={p.nombre}
+                      className="w-10 h-10 rounded object-cover bg-white"
+                      onError={(e) => { e.currentTarget.src = "/placeholder.svg"; }}
+                    />
+                  </TableCell>
                   <TableCell className="font-medium">{p.nombre}</TableCell>
                   <TableCell className="text-xs text-muted-foreground">{p.sku_norm}</TableCell>
                   <TableCell>{p.categorias?.nombre}</TableCell>
@@ -139,6 +148,16 @@ export default function AdminCatalog() {
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>{editing ? "Editar Producto" : "Nuevo Producto"}</DialogTitle></DialogHeader>
           <div className="grid gap-3">
+            {editing?.imagen_url && (
+              <div className="flex justify-center">
+                <img
+                  src={editing.imagen_url}
+                  alt={form.nombre}
+                  className="w-32 h-32 rounded-lg object-cover bg-white border"
+                  onError={(e) => { e.currentTarget.src = "/placeholder.svg"; }}
+                />
+              </div>
+            )}
             <Input placeholder="Nombre" value={form.nombre} onChange={(e) => handleField("nombre", e.target.value)} />
             <Input placeholder="SKU" value={form.sku_norm} onChange={(e) => handleField("sku_norm", e.target.value)} />
             <Textarea placeholder="Descripción" value={form.descripcion} onChange={(e) => handleField("descripcion", e.target.value)} />
