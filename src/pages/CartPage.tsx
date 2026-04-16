@@ -207,6 +207,12 @@ export default function CartPage() {
               {items.map((item) => (
                 <Card key={item.producto_id}>
                   <CardContent className="p-4 flex items-center gap-4">
+                    <img
+                      src={item.imagen_url || "/placeholder.svg"}
+                      alt={item.nombre}
+                      className="w-16 h-16 rounded-lg object-cover bg-white flex-shrink-0"
+                      onError={(e) => { e.currentTarget.src = "/placeholder.svg"; }}
+                    />
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm truncate">{item.nombre}</p>
                       <p className="text-xs text-muted-foreground">{item.sku}</p>

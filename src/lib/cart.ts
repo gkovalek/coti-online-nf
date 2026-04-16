@@ -7,6 +7,7 @@ export interface CartItem {
   precio_unitario: number;
   cantidad: number;
   stock_disponible: number;
+  imagen_url?: string | null;
 }
 
 interface CartStore {
