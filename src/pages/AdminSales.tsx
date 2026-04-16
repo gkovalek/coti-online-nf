@@ -9,16 +9,37 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 
 export default function AdminSales() {
   const [ventas, setVentas] = useState<any[]>([]);
+  const [comisiones, setComisiones] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<any>(null);
   const [items, setItems] = useState<any[]>([]);
 
   useEffect(() => {
-    supabase
-      .from("ventas")
-      .select("*, clientes(nombre, email)")
-      .order("created_at", { ascending: false })
-      .then(({ data }) => { setVentas(data || []); setLoading(false); });
+    const load = async () => {
+      const { data: vts } = await supabase
+        .from("ventas")
+        .select("*, clientes(nombre, email)")
+        .order("created_at", { ascending: false });
+      const list = vts || [];
+      setVentas(list);
+
+      const cotIds = list.map((v) => v.cotizacion_id).filter(Boolean);
+      if (cotIds.length > 0) {
+        const { data: its } = await supabase
+          .from("cotizacion_items")
+          .select("cotizacion_id, cantidad, subtotal, productos(precio_proveedor)")
+          .in("cotizacion_id", cotIds);
+        const map: Record<string, number> = {};
+        (its || []).forEach((it: any) => {
+          const costo = Number(it.cantidad || 0) * Number(it.productos?.precio_proveedor || 0);
+          const sub = Number(it.subtotal || 0);
+          map[it.cotizacion_id] = (map[it.cotizacion_id] || 0) + (sub - costo);
+        });
+        setComisiones(map);
+      }
+      setLoading(false);
+    };
+    load();
   }, []);
 
   const viewItems = async (v: any) => {
