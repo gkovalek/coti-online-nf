@@ -23,7 +23,13 @@ export default function AdminSales() {
 
   const viewItems = async (v: any) => {
     setSelected(v);
-    const { data } = await supabase.from("venta_items").select("*, productos(nombre, sku)").eq("venta_id", v.id);
+    setItems([]);
+    if (!v.cotizacion_id) return;
+    const { data, error } = await supabase
+      .from("cotizacion_items")
+      .select("*, productos(nombre, sku_norm)")
+      .eq("cotizacion_id", v.cotizacion_id);
+    if (error) console.error("Error cargando items:", error);
     setItems(data || []);
   };
 
@@ -64,28 +70,38 @@ export default function AdminSales() {
       </Card>
 
       <Dialog open={!!selected} onOpenChange={() => setSelected(null)}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Items de Venta #{selected?.id.slice(0, 8)}</DialogTitle></DialogHeader>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Producto</TableHead>
-                <TableHead className="text-right">Cant.</TableHead>
-                <TableHead className="text-right">Precio</TableHead>
-                <TableHead className="text-right">Subtotal</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {items.map((i) => (
-                <TableRow key={i.id}>
-                  <TableCell>{i.productos?.nombre}</TableCell>
-                  <TableCell className="text-right">{i.cantidad}</TableCell>
-                  <TableCell className="text-right">{formatARS(i.precio_unitario)}</TableCell>
-                  <TableCell className="text-right">{formatARS(i.subtotal)}</TableCell>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Detalle de Venta {selected?.numero_venta || `#${selected?.id.slice(0, 8)}`}</DialogTitle>
+          </DialogHeader>
+          {items.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground text-sm">
+              {selected?.cotizacion_id ? "Cargando items..." : "Esta venta no tiene cotización asociada"}
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Producto</TableHead>
+                  <TableHead>SKU</TableHead>
+                  <TableHead className="text-right">Cant.</TableHead>
+                  <TableHead className="text-right">Precio</TableHead>
+                  <TableHead className="text-right">Subtotal</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {items.map((i) => (
+                  <TableRow key={i.id}>
+                    <TableCell className="font-medium">{i.productos?.nombre || i.descripcion_item || "—"}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">{i.productos?.sku_norm || "—"}</TableCell>
+                    <TableCell className="text-right">{i.cantidad}</TableCell>
+                    <TableCell className="text-right">{formatARS(i.precio_unitario)}</TableCell>
+                    <TableCell className="text-right font-medium">{formatARS(i.subtotal)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </DialogContent>
       </Dialog>
     </AdminLayout>
