@@ -9,22 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Search, ShoppingCart, ArrowRight, Construction, Grid3x3, Layers, StretchHorizontal, Wrench, Package, Hash, Triangle, LayoutGrid, Plus, Minus } from "lucide-react";
+import { Search, ShoppingCart, ArrowRight, Plus, Minus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import heroBackground from "@/assets/hero-concrete.jpeg";
 
-const getCategoryIcon = (categoryName: string) => {
-  const name = categoryName?.toLowerCase() || "";
-  if (name.includes("hierro") || name.includes("perfil") || name.includes("caño")) return Grid3x3;
-  if (name.includes("chapa") || name.includes("cubierta")) return StretchHorizontal;
-  if (name.includes("cemento") || name.includes("cal") || name.includes("adhesivo") || name.includes("bolsa")) return Layers;
-  if (name.includes("herramienta")) return Wrench;
-  if (name.includes("malla") || name.includes("alambre")) return Hash;
-  if (name.includes("árido") || name.includes("arena") || name.includes("piedra")) return Triangle;
-  if (name.includes("ladrillo") || name.includes("bloque")) return LayoutGrid;
-  return Construction;
-};
 
 export default function CatalogPage() {
   const [productos, setProductos] = useState<any[]>([]);
