@@ -267,15 +267,15 @@ export default function CartPage() {
                           </SelectContent>
                         </Select>
                       )}
-                      <div className="flex gap-2">
-                        <Button variant="outline" className="flex-1" onClick={() => setMode("idle")}>Cancelar</Button>
+                      <div className="flex flex-col gap-2">
                         <Button
-                          className="flex-1"
+                          className="w-full"
                           disabled={submitting}
                           onClick={mode === "quote" ? handleQuote : handleBuy}
                         >
                           {submitting ? "Procesando..." : mode === "quote" ? "Generar Cotización" : "Confirmar Compra"}
                         </Button>
+                        <Button variant="outline" className="w-full" onClick={() => setMode("idle")}>Cancelar</Button>
                       </div>
                     </div>
                   )}
