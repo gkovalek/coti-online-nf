@@ -232,55 +232,55 @@ export default function CartPage() {
 
             <div className="space-y-4">
               <Card>
-                <CardContent className="p-5">
-                  <p className="text-sm text-muted-foreground">Total</p>
-                  <p className="text-2xl font-bold">{formatARS(total())}</p>
-                </CardContent>
-              </Card>
+                <CardContent className="p-5 space-y-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Total</p>
+                    <p className="text-2xl font-bold">{formatARS(total())}</p>
+                  </div>
 
-              {mode === "idle" && (
-                <div className="space-y-2">
-                  <Button className="w-full" onClick={() => setMode("quote")}>
-                    <FileText className="mr-2 h-4 w-4" /> Solicitar Cotización
-                  </Button>
-                  <Button className="w-full" variant="secondary" onClick={() => setMode("buy")}>
-                    <CreditCard className="mr-2 h-4 w-4" /> Compra Directa
-                  </Button>
-                </div>
-              )}
-
-              {(mode === "quote" || mode === "buy") && (
-                <Card>
-                  <CardContent className="p-5 space-y-3">
-                    <h3 className="font-semibold text-sm">{mode === "quote" ? "Datos para Cotización" : "Datos de Compra"}</h3>
-                    <Input placeholder="Nombre *" value={form.nombre} onChange={(e) => handleField("nombre", e.target.value)} />
-                    <Input placeholder="Email *" type="email" value={form.email} onChange={(e) => handleField("email", e.target.value)} />
-                    <Input placeholder="Teléfono" value={form.telefono} onChange={(e) => handleField("telefono", e.target.value)} />
-                    <Input placeholder="Dirección" value={form.direccion} onChange={(e) => handleField("direccion", e.target.value)} />
-                    {mode === "buy" && (
-                      <Select value={medioPago} onValueChange={setMedioPago}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="transferencia">Transferencia</SelectItem>
-                          <SelectItem value="efectivo">Efectivo</SelectItem>
-                          <SelectItem value="tarjeta">Tarjeta</SelectItem>
-                          <SelectItem value="cheque">Cheque</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    )}
-                    <div className="flex gap-2">
-                      <Button variant="outline" className="flex-1" onClick={() => setMode("idle")}>Cancelar</Button>
-                      <Button
-                        className="flex-1"
-                        disabled={submitting}
-                        onClick={mode === "quote" ? handleQuote : handleBuy}
-                      >
-                        {submitting ? "Procesando..." : mode === "quote" ? "Generar Cotización" : "Confirmar Compra"}
+                  {mode === "idle" && (
+                    <div className="space-y-2">
+                      <Button className="w-full" onClick={() => setMode("quote")}>
+                        <FileText className="mr-2 h-4 w-4" /> Solicitar Cotización
+                      </Button>
+                      <Button className="w-full" variant="secondary" onClick={() => setMode("buy")}>
+                        <CreditCard className="mr-2 h-4 w-4" /> Compra Directa
                       </Button>
                     </div>
-                  </CardContent>
-                </Card>
-              )}
+                  )}
+
+                  {(mode === "quote" || mode === "buy") && (
+                    <div className="space-y-3">
+                      <h3 className="font-semibold text-sm">{mode === "quote" ? "Datos para Cotización" : "Datos de Compra"}</h3>
+                      <Input placeholder="Nombre *" value={form.nombre} onChange={(e) => handleField("nombre", e.target.value)} />
+                      <Input placeholder="Email *" type="email" value={form.email} onChange={(e) => handleField("email", e.target.value)} />
+                      <Input placeholder="Teléfono" value={form.telefono} onChange={(e) => handleField("telefono", e.target.value)} />
+                      <Input placeholder="Dirección" value={form.direccion} onChange={(e) => handleField("direccion", e.target.value)} />
+                      {mode === "buy" && (
+                        <Select value={medioPago} onValueChange={setMedioPago}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="transferencia">Transferencia</SelectItem>
+                            <SelectItem value="efectivo">Efectivo</SelectItem>
+                            <SelectItem value="tarjeta">Tarjeta</SelectItem>
+                            <SelectItem value="cheque">Cheque</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                      <div className="flex gap-2">
+                        <Button variant="outline" className="flex-1" onClick={() => setMode("idle")}>Cancelar</Button>
+                        <Button
+                          className="flex-1"
+                          disabled={submitting}
+                          onClick={mode === "quote" ? handleQuote : handleBuy}
+                        >
+                          {submitting ? "Procesando..." : mode === "quote" ? "Generar Cotización" : "Confirmar Compra"}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </div>
           </div>
         )}
