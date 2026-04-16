@@ -143,19 +143,19 @@ export default function CatalogPage() {
                       alt={p.producto}
                       className="w-full aspect-square object-contain rounded-t-2xl bg-white p-4"
                       onError={(e) => {
-                        e.currentTarget.style.display = "none";
-                        e.currentTarget.parentElement!.querySelector('.img-fallback')?.classList.remove('hidden');
+                        const parent = e.currentTarget.parentElement!;
+                        e.currentTarget.remove();
+                        const fallback = document.createElement('div');
+                        fallback.className = 'w-full aspect-square rounded-t-2xl bg-white flex items-center justify-center text-sm text-muted-foreground';
+                        fallback.textContent = 'Sin imagen';
+                        parent.prepend(fallback);
                       }}
                     />
-                  ) : null}
-                  {!p.imagen_url && (
+                  ) : (
                     <div className="w-full aspect-square rounded-t-2xl bg-white flex items-center justify-center text-sm text-muted-foreground">
                       Sin imagen
                     </div>
                   )}
-                  <div className="img-fallback hidden w-full aspect-square rounded-t-2xl bg-white flex items-center justify-center text-sm text-muted-foreground">
-                    Sin imagen
-                  </div>
 
                   <CardContent className="p-5 flex flex-col gap-2">
                     <div>
