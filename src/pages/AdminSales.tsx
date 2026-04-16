@@ -23,7 +23,13 @@ export default function AdminSales() {
 
   const viewItems = async (v: any) => {
     setSelected(v);
-    const { data } = await supabase.from("venta_items").select("*, productos(nombre, sku)").eq("venta_id", v.id);
+    setItems([]);
+    if (!v.cotizacion_id) return;
+    const { data, error } = await supabase
+      .from("cotizacion_items")
+      .select("*, productos(nombre, sku_norm)")
+      .eq("cotizacion_id", v.cotizacion_id);
+    if (error) console.error("Error cargando items:", error);
     setItems(data || []);
   };
 
