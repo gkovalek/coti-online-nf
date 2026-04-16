@@ -23,7 +23,12 @@ export default function AdminQuotes() {
 
   const viewItems = async (cot: any) => {
     setSelected(cot);
-    const { data } = await supabase.from("cotizacion_items").select("*, productos(nombre, sku)").eq("cotizacion_id", cot.id);
+    setItems([]);
+    const { data, error } = await supabase
+      .from("cotizacion_items")
+      .select("*, productos(nombre, sku_norm)")
+      .eq("cotizacion_id", cot.id);
+    if (error) console.error("Error cargando items:", error);
     setItems(data || []);
   };
 
