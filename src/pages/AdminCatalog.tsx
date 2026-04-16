@@ -48,7 +48,7 @@ export default function AdminCatalog() {
   const openEdit = (p: any) => {
     setEditing(p);
     setForm({
-      nombre: p.nombre, sku_norm: p.sku_norm || "", descripcion: p.descripcion || "",
+      nombre: p.producto, sku_norm: p.sku_norm || "", descripcion: "",
       categoria_id: p.categoria_id, proveedor_id: p.proveedor_id,
       precio_venta: String(p.precio_venta ?? ""), stock: String(p.stock ?? ""),
       unidad_medida: p.unidad_medida || "unidad", status: p.status || "activo",
