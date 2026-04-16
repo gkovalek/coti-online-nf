@@ -68,12 +68,13 @@ export default function AdminSales() {
                 <TableHead>Canal</TableHead>
                 <TableHead>Medio de Pago</TableHead>
                 <TableHead className="text-right">Total</TableHead>
+                <TableHead className="text-right">Comisión</TableHead>
                 <TableHead>Fecha</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Cargando...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Cargando...</TableCell></TableRow>
               ) : ventas.map((v) => (
                 <TableRow key={v.id} className="cursor-pointer hover:bg-muted/50" onClick={() => viewItems(v)}>
                   <TableCell className="text-xs font-mono">{v.id.slice(0, 8)}</TableCell>
@@ -82,6 +83,7 @@ export default function AdminSales() {
                   <TableCell>{v.canal || "—"}</TableCell>
                   <TableCell>{v.medio_pago || "—"}</TableCell>
                   <TableCell className="text-right font-medium">{formatARS(v.total)}</TableCell>
+                  <TableCell className="text-right font-medium text-primary">{formatARS(comisiones[v.cotizacion_id] || 0)}</TableCell>
                   <TableCell className="text-xs">{new Date(v.created_at).toLocaleDateString("es-AR")}</TableCell>
                 </TableRow>
               ))}
