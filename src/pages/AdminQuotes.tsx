@@ -73,12 +73,13 @@ export default function AdminQuotes() {
                 <TableHead>Estado</TableHead>
                 <TableHead>Canal</TableHead>
                 <TableHead className="text-right">Total</TableHead>
+                <TableHead className="text-right">Comisión</TableHead>
                 <TableHead>Fecha</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Cargando...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Cargando...</TableCell></TableRow>
               ) : cotizaciones.map((c) => (
                 <TableRow key={c.id} className="cursor-pointer hover:bg-muted/50" onClick={() => viewItems(c)}>
                   <TableCell className="text-xs font-mono">{c.id.slice(0, 8)}</TableCell>
@@ -87,6 +88,7 @@ export default function AdminQuotes() {
                   <TableCell><Badge variant={estadoColor(c.estado)}>{c.estado}</Badge></TableCell>
                   <TableCell>{c.canal || "—"}</TableCell>
                   <TableCell className="text-right font-medium">{formatARS(c.total)}</TableCell>
+                  <TableCell className="text-right font-medium text-primary">{formatARS(comisiones[c.id] || 0)}</TableCell>
                   <TableCell className="text-xs">{new Date(c.created_at).toLocaleDateString("es-AR")}</TableCell>
                 </TableRow>
               ))}
