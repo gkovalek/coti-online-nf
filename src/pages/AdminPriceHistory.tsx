@@ -51,8 +51,8 @@ export default function AdminPriceHistory() {
                   <TableCell className="text-xs text-muted-foreground">{r.sku_norm || "—"}</TableCell>
                   <TableCell className="text-right">{r.precio_anterior != null ? formatARS(r.precio_anterior) : "—"}</TableCell>
                   <TableCell className="text-right">{r.precio_nuevo != null ? formatARS(r.precio_nuevo) : "—"}</TableCell>
-                  <TableCell className="text-right">{r.stock_anterior ?? "—"}</TableCell>
-                  <TableCell className="text-right">{r.stock_nuevo ?? "—"}</TableCell>
+                  <TableCell className="text-right">{r.stock_anterior != null ? r.stock_anterior : <span className="text-xs text-muted-foreground italic">Sin registro</span>}</TableCell>
+                  <TableCell className="text-right">{r.stock_nuevo != null ? r.stock_nuevo : "—"}</TableCell>
                   <TableCell>{r.fuente || "—"}</TableCell>
                   <TableCell className="max-w-[200px] truncate">{r.motivo || "—"}</TableCell>
                   <TableCell className="text-xs">{r.fecha_cambio ? new Date(r.fecha_cambio).toLocaleDateString("es-AR") : "—"}</TableCell>
