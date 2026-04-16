@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import { PublicHeader } from "./PublicHeader";
+import { ChatBubble } from "./ChatBubble";
 
 export function PublicLayout({ children }: { children: ReactNode }) {
   return (
@@ -11,6 +12,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
           © {new Date().getFullYear()} Holcim SA — Neural Force. Todos los derechos reservados.
         </div>
       </footer>
+      <ChatBubble />
     </div>
   );
 }
