@@ -6,12 +6,20 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, CreditCard } from "lucide-react";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { Search, CreditCard, Mail, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
+type Step = "email" | "otp" | "quotes";
+
+const OTP_GENERATE_URL = "https://nueralforce.app.n8n.cloud/webhook/otp-generar";
+const OTP_VERIFY_URL = "https://nueralforce.app.n8n.cloud/webhook/otp-verificar";
+
 export default function SearchQuotePage() {
+  const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
+  const [codigo, setCodigo] = useState("");
   const [cotizaciones, setCotizaciones] = useState<any[]>([]);
   const [selected, setSelected] = useState<any>(null);
   const [items, setItems] = useState<any[]>([]);
@@ -19,15 +27,32 @@ export default function SearchQuotePage() {
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
 
-  const searchQuotes = async () => {
+  const requestOtp = async () => {
     if (!email) return;
     setLoading(true);
-    setSelected(null);
+    try {
+      await fetch(OTP_GENERATE_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      toast.success("Te enviamos un código a tu email");
+      setCodigo("");
+      setStep("otp");
+    } catch (e: any) {
+      toast.error("No pudimos enviar el código. Intentá de nuevo.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadQuotes = async () => {
     const { data: clientes } = await supabase.from("clientes").select("id").eq("email", email);
     if (!clientes?.length) {
       setCotizaciones([]);
-      setLoading(false);
-      return toast.info("No se encontraron cotizaciones para ese email");
+      toast.info("No se encontraron cotizaciones para ese email");
+      setStep("quotes");
+      return;
     }
     const { data } = await supabase
       .from("cotizaciones")
@@ -36,7 +61,38 @@ export default function SearchQuotePage() {
       .eq("estado", "pendiente")
       .order("created_at", { ascending: false });
     setCotizaciones(data || []);
-    setLoading(false);
+    setStep("quotes");
+  };
+
+  const verifyOtp = async () => {
+    if (codigo.length !== 6) return;
+    setLoading(true);
+    try {
+      const res = await fetch(OTP_VERIFY_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, codigo }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (data?.valido === true) {
+        toast.success("Código verificado");
+        await loadQuotes();
+      } else {
+        toast.error("Código incorrecto o expirado");
+        setCodigo("");
+      }
+    } catch {
+      toast.error("Error al verificar el código");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetFlow = () => {
+    setStep("email");
+    setCodigo("");
+    setCotizaciones([]);
+    setSelected(null);
   };
 
   const selectQuote = async (cot: any) => {
@@ -87,14 +143,77 @@ export default function SearchQuotePage() {
     <PublicLayout>
       <div className="container max-w-2xl py-12">
         <h1 className="text-2xl font-bold mb-6">Buscar Mis Cotizaciones</h1>
-        <div className="flex gap-2 mb-6">
-          <Input placeholder="Ingrese su email..." value={email} onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => e.key === "Enter" && searchQuotes()} />
-          <Button onClick={searchQuotes} disabled={loading}>
-            <Search className="h-4 w-4 mr-2" /> Buscar
-          </Button>
-        </div>
 
-        {cotizaciones.length > 0 && !selected && (
+        {step === "email" && (
+          <div className="flex gap-2 mb-6">
+            <Input
+              type="email"
+              placeholder="Ingrese su email..."
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && requestOtp()}
+            />
+            <Button onClick={requestOtp} disabled={loading || !email}>
+              <Mail className="h-4 w-4 mr-2" /> {loading ? "Enviando..." : "Enviar código"}
+            </Button>
+          </div>
+        )}
+
+        {step === "otp" && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <ShieldCheck className="h-5 w-5" /> Verificación
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Ingresá el código de 6 dígitos que enviamos a <span className="font-medium text-foreground">{email}</span>
+              </p>
+              <div className="flex justify-center">
+                <InputOTP maxLength={6} value={codigo} onChange={setCodigo}>
+                  <InputOTPGroup>
+                    <InputOTPSlot index={0} />
+                    <InputOTPSlot index={1} />
+                    <InputOTPSlot index={2} />
+                    <InputOTPSlot index={3} />
+                    <InputOTPSlot index={4} />
+                    <InputOTPSlot index={5} />
+                  </InputOTPGroup>
+                </InputOTP>
+              </div>
+              <div className="flex gap-3">
+                <Button variant="outline" className="flex-1" onClick={resetFlow} disabled={loading}>
+                  Cambiar email
+                </Button>
+                <Button className="flex-1" onClick={verifyOtp} disabled={loading || codigo.length !== 6}>
+                  {loading ? "Verificando..." : "Confirmar"}
+                </Button>
+              </div>
+              <button
+                type="button"
+                onClick={requestOtp}
+                disabled={loading}
+                className="w-full text-xs text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
+              >
+                Reenviar código
+              </button>
+            </CardContent>
+          </Card>
+        )}
+
+        {step === "quotes" && cotizaciones.length === 0 && !selected && (
+          <Card>
+            <CardContent className="p-6 text-center space-y-4">
+              <p className="text-sm text-muted-foreground">No se encontraron cotizaciones pendientes para este email.</p>
+              <Button variant="outline" onClick={resetFlow}>
+                <Search className="h-4 w-4 mr-2" /> Buscar otro email
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {step === "quotes" && cotizaciones.length > 0 && !selected && (
           <div className="space-y-3">
             {cotizaciones.map((c) => (
               <Card key={c.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => selectQuote(c)}>
