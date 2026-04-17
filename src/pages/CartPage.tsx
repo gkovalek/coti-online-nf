@@ -82,7 +82,6 @@ export default function CartPage() {
         producto_id: i.producto_id,
         cantidad: i.cantidad,
         precio_unitario: i.precio_unitario,
-        subtotal: i.precio_unitario * i.cantidad,
       }));
       await supabase.from("venta_items").insert(ventaItems);
       try {
