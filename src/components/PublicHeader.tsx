@@ -29,11 +29,6 @@ export function PublicHeader() {
               )}
             </Button>
           </Link>
-          <Link to="/admin/login">
-            <Button variant="ghost" size="sm" className="text-primary-foreground/60 hover:text-primary-foreground hover:bg-primary/80 text-xs">
-              Admin
-            </Button>
-          </Link>
         </nav>
       </div>
     </header>

@@ -26,12 +26,13 @@ const App = () => (
           <Route path="/" element={<CatalogPage />} />
           <Route path="/carrito" element={<CartPage />} />
           <Route path="/buscar-cotizacion" element={<SearchQuotePage />} />
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin/catalogo" element={<AdminCatalog />} />
-          <Route path="/admin/historial-precios" element={<AdminPriceHistory />} />
-          <Route path="/admin/cotizaciones" element={<AdminQuotes />} />
-          <Route path="/admin/ventas" element={<AdminSales />} />
+          <Route path="/gestion/acceso" element={<AdminLogin />} />
+          <Route path="/gestion" element={<AdminDashboard />} />
+          <Route path="/gestion/catalogo" element={<AdminCatalog />} />
+          <Route path="/gestion/historial-precios" element={<AdminPriceHistory />} />
+          <Route path="/gestion/cotizaciones" element={<AdminQuotes />} />
+          <Route path="/gestion/ventas" element={<AdminSales />} />
+          <Route path="/admin/*" element={<NotFound />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
