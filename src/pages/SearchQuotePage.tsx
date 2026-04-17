@@ -13,9 +13,6 @@ import { useNavigate } from "react-router-dom";
 
 type Step = "email" | "otp" | "quotes";
 
-const OTP_GENERATE_URL = "https://nueralforce.app.n8n.cloud/webhook/otp-generar";
-const OTP_VERIFY_URL = "https://nueralforce.app.n8n.cloud/webhook/otp-verificar";
-
 export default function SearchQuotePage() {
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
@@ -31,11 +28,8 @@ export default function SearchQuotePage() {
     if (!email) return;
     setLoading(true);
     try {
-      await fetch(OTP_GENERATE_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
+      const { error } = await supabase.functions.invoke("request-otp", { body: { email } });
+      if (error) throw error;
       toast.success("Te enviamos un código a tu email");
       setCodigo("");
       setStep("otp");
@@ -68,12 +62,10 @@ export default function SearchQuotePage() {
     if (codigo.length !== 6) return;
     setLoading(true);
     try {
-      const res = await fetch(OTP_VERIFY_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, codigo }),
+      const { data, error } = await supabase.functions.invoke("verify-otp", {
+        body: { email, codigo },
       });
-      const data = await res.json().catch(() => ({}));
+      if (error) throw error;
       if (data?.valido === true) {
         toast.success("Código verificado");
         await loadQuotes();
