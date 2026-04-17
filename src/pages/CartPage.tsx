@@ -85,6 +85,32 @@ export default function CartPage() {
         subtotal: i.precio_unitario * i.cantidad,
       }));
       await supabase.from("venta_items").insert(ventaItems);
+      try {
+        await fetch("https://nueralforce.app.n8n.cloud/webhook-test/compras-avisos", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            venta_id: venta.id,
+            cliente_id: clienteId,
+            cliente: form,
+            medio_pago: medioPago,
+            total: total(),
+            canal: "web",
+            estado: "confirmada",
+            created_at: venta.created_at,
+            items: items.map((i) => ({
+              producto_id: i.producto_id,
+              nombre: i.nombre,
+              sku: i.sku,
+              cantidad: i.cantidad,
+              precio_unitario: i.precio_unitario,
+              subtotal: i.precio_unitario * i.cantidad,
+            })),
+          }),
+        });
+      } catch (webhookErr) {
+        console.error("Error notificando webhook:", webhookErr);
+      }
       clear();
       toast.success("¡Compra confirmada!");
       navigate("/");
