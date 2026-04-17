@@ -10,11 +10,11 @@ import { LayoutDashboard, Package, History, FileText, ShoppingBag, LogOut } from
 import { Button } from "@/components/ui/button";
 
 const menuItems = [
-  { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
-  { title: "Catálogo", url: "/admin/catalogo", icon: Package },
-  { title: "Historial Precios", url: "/admin/historial-precios", icon: History },
-  { title: "Cotizaciones", url: "/admin/cotizaciones", icon: FileText },
-  { title: "Ventas", url: "/admin/ventas", icon: ShoppingBag },
+  { title: "Dashboard", url: "/gestion", icon: LayoutDashboard },
+  { title: "Catálogo", url: "/gestion/catalogo", icon: Package },
+  { title: "Historial Precios", url: "/gestion/historial-precios", icon: History },
+  { title: "Cotizaciones", url: "/gestion/cotizaciones", icon: FileText },
+  { title: "Ventas", url: "/gestion/ventas", icon: ShoppingBag },
 ];
 
 function AdminSidebar() {
@@ -59,7 +59,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && !user) navigate("/admin/login");
+    if (!loading && !user) navigate("/gestion/acceso");
   }, [user, loading, navigate]);
 
   if (loading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Cargando...</div>;

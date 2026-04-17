@@ -20,7 +20,7 @@ export default function AdminLogin() {
     if (error) {
       toast.error("Credenciales inválidas");
     } else {
-      navigate("/admin");
+      navigate("/gestion");
     }
     setLoading(false);
   };
