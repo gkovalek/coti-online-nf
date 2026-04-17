@@ -28,12 +28,19 @@ export default function SearchQuotePage() {
     if (!email) return;
     setLoading(true);
     try {
-      const { error } = await supabase.functions.invoke("request-otp", { body: { email } });
-      if (error) throw error;
+      const res = await fetch(
+        `https://rvcljicaxjwcefhpqtlm.supabase.co/functions/v1/request-otp`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        }
+      );
+      if (!res.ok) throw new Error("Error");
       toast.success("Te enviamos un código a tu email");
       setCodigo("");
       setStep("otp");
-    } catch (e: any) {
+    } catch (e) {
       toast.error("No pudimos enviar el código. Intentá de nuevo.");
     } finally {
       setLoading(false);
