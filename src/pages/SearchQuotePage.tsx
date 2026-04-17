@@ -69,17 +69,18 @@ export default function SearchQuotePage() {
     if (codigo.length !== 6) return;
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("verify-otp", {
-        body: { email, codigo },
-      });
-      if (error) throw error;
-      if (data?.valido === true) {
-        toast.success("Código verificado");
-        await loadQuotes();
-      } else {
-        toast.error("Código incorrecto o expirado");
-        setCodigo("");
-      }
+      const res = await fetch(
+        `https://rvcljicaxjwcefhpqtlm.supabase.co/functions/v1/verify-otp`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, codigo }),
+        }
+      );
+      const data = await res.json();
+      if (!data.valido) throw new Error("Código inválido");
+      toast.success("Código verificado");
+      await loadQuotes();
     } catch {
       toast.error("Error al verificar el código");
     } finally {
