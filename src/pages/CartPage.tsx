@@ -210,7 +210,14 @@ export default function CartPage() {
                   <span className="text-muted-foreground">Método de pago: </span>
                   <span className="font-medium capitalize">{ventaResult.medio_pago}</span>
                 </p>
+                <p>
+                  <span className="text-muted-foreground">Dirección de entrega: </span>
+                  <span className="font-medium">{ventaResult.cliente.direccion}</span>
+                </p>
               </div>
+              <p className="text-sm text-center text-muted-foreground">
+                A tu email recibirás toda la información de tu compra.
+              </p>
               <Button className="w-full" onClick={() => { setVentaResult(null); navigate("/"); }}>
                 Volver al catálogo
               </Button>
