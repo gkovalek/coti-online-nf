@@ -131,8 +131,16 @@ export default function SearchQuotePage() {
       }));
       await supabase.from("venta_items").insert(ventaItems);
       await supabase.from("cotizaciones").update({ estado: "convertida" }).eq("id", selected.id);
-      toast.success("¡Compra confirmada exitosamente!");
-      navigate("/");
+      const { data: cliente } = await supabase
+        .from("clientes")
+        .select("nombre, email")
+        .eq("id", selected.cliente_id)
+        .maybeSingle();
+      setVentaResult({
+        ...venta,
+        cliente: cliente || { nombre: "—", email },
+        medio_pago: "transferencia",
+      });
     } catch (e: any) {
       toast.error(e.message || "Error al confirmar compra");
     } finally {
