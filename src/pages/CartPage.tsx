@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trash2, Minus, Plus, FileText, CreditCard } from "lucide-react";
+import { Trash2, Minus, Plus, FileText, CreditCard, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function CartPage() {
@@ -18,6 +18,7 @@ export default function CartPage() {
   const [medioPago, setMedioPago] = useState("transferencia");
   const [submitting, setSubmitting] = useState(false);
   const [cotizacionResult, setCotizacionResult] = useState<any>(null);
+  const [ventaResult, setVentaResult] = useState<any>(null);
   const navigate = useNavigate();
 
   const handleField = (field: string, val: string) => setForm((f) => ({ ...f, [field]: val }));
@@ -119,9 +120,10 @@ export default function CartPage() {
       } catch (webhookErr) {
         console.error("Error notificando webhook:", webhookErr);
       }
+      const ventaItemsSnapshot = items.map((i) => ({ ...i }));
       clear();
+      setVentaResult({ ...venta, items: ventaItemsSnapshot, cliente: form, medio_pago: medioPago });
       toast.success("¡Compra confirmada!");
-      navigate("/");
     } catch (e: any) {
       toast.error(e.message || "Error al procesar compra");
     } finally {
@@ -154,15 +156,91 @@ export default function CartPage() {
       }));
       await supabase.from("venta_items").insert(ventaItems);
       await supabase.from("cotizaciones").update({ estado: "convertida" }).eq("id", cotizacionResult.id);
+      const ventaItemsSnapshot = cotizacionResult.items.map((i: any) => ({ ...i }));
       clear();
+      setCotizacionResult(null);
+      setVentaResult({
+        ...venta,
+        items: ventaItemsSnapshot,
+        cliente: cotizacionResult.cliente,
+        medio_pago: "transferencia",
+      });
       toast.success("¡Compra confirmada desde cotización!");
-      navigate("/");
     } catch (e: any) {
       toast.error(e.message || "Error al confirmar compra");
     } finally {
       setSubmitting(false);
     }
   };
+
+  if (ventaResult) {
+    return (
+      <PublicLayout>
+        <div className="container max-w-2xl py-12">
+          <Card>
+            <CardHeader className="text-center space-y-3">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-accent/10">
+                <CheckCircle2 className="h-10 w-10 text-accent" />
+              </div>
+              <CardTitle className="text-2xl">¡Compra Confirmada!</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Tu compra fue registrada exitosamente. Te enviaremos los detalles a tu email.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="rounded-md border bg-muted/50 p-4 space-y-1 text-sm">
+                <p>
+                  <span className="text-muted-foreground">N° de venta: </span>
+                  <span className="font-mono font-semibold">{ventaResult.id}</span>
+                </p>
+                <p>
+                  <span className="text-muted-foreground">Cliente: </span>
+                  <span className="font-medium">{ventaResult.cliente.nombre}</span> ({ventaResult.cliente.email})
+                </p>
+                <p>
+                  <span className="text-muted-foreground">Medio de pago: </span>
+                  <span className="font-medium capitalize">{ventaResult.medio_pago}</span>
+                </p>
+                <p>
+                  <span className="text-muted-foreground">Fecha: </span>
+                  {new Date(ventaResult.created_at).toLocaleString("es-AR")}
+                </p>
+              </div>
+              <div className="border rounded-md overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted">
+                    <tr>
+                      <th className="text-left p-2">Producto</th>
+                      <th className="text-right p-2">Cant.</th>
+                      <th className="text-right p-2">Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {ventaResult.items.map((i: any) => (
+                      <tr key={i.producto_id} className="border-t">
+                        <td className="p-2">{i.nombre}</td>
+                        <td className="p-2 text-right">{i.cantidad}</td>
+                        <td className="p-2 text-right">{formatARS(i.precio_unitario * i.cantidad)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot className="bg-muted font-bold">
+                    <tr>
+                      <td colSpan={2} className="p-2 text-right">Total:</td>
+                      <td className="p-2 text-right">{formatARS(ventaResult.total)}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+              <Button className="w-full" onClick={() => { setVentaResult(null); navigate("/"); }}>
+                Volver al catálogo
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </PublicLayout>
+    );
+  }
 
   if (cotizacionResult) {
     return (
