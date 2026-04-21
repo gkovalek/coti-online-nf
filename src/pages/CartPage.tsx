@@ -173,7 +173,7 @@ export default function CartPage() {
         cliente: cotizacionResult.cliente,
         medio_pago: "transferencia",
       });
-      toast.success("¡Compra confirmada desde cotización!");
+      
     } catch (e: any) {
       toast.error(e.message || "Error al confirmar compra");
     } finally {
