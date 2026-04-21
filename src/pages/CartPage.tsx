@@ -293,8 +293,8 @@ export default function CartPage() {
                       <h3 className="font-semibold text-sm">{mode === "quote" ? "Datos para Cotización" : "Datos de Compra"}</h3>
                       <Input placeholder="Nombre *" value={form.nombre} onChange={(e) => handleField("nombre", e.target.value)} />
                       <Input placeholder="Email *" type="email" value={form.email} onChange={(e) => handleField("email", e.target.value)} />
-                      <Input placeholder="Teléfono" value={form.telefono} onChange={(e) => handleField("telefono", e.target.value)} />
-                      <Input placeholder="Dirección" value={form.direccion} onChange={(e) => handleField("direccion", e.target.value)} />
+                      <Input placeholder={mode === "quote" ? "Teléfono *" : "Teléfono"} value={form.telefono} onChange={(e) => handleField("telefono", e.target.value)} />
+                      <Input placeholder={mode === "quote" ? "Dirección *" : "Dirección"} value={form.direccion} onChange={(e) => handleField("direccion", e.target.value)} />
                       {mode === "buy" && (
                         <Select value={medioPago} onValueChange={setMedioPago}>
                           <SelectTrigger><SelectValue /></SelectTrigger>
