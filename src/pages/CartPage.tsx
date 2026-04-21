@@ -77,7 +77,15 @@ export default function CartPage() {
   };
 
   const handleBuy = async () => {
-    if (!form.nombre || !form.email) return toast.error("Nombre y email son obligatorios");
+    const requiredFields: Array<[keyof typeof form, string]> = [
+      ["nombre", "Nombre"],
+      ["email", "Email"],
+      ["telefono", "Teléfono"],
+      ["direccion", "Dirección"],
+    ];
+    for (const [key, label] of requiredFields) {
+      if (!form[key].trim()) return toast.error(`El campo ${label} es obligatorio`);
+    }
     setSubmitting(true);
     try {
       const clienteId = await getOrCreateCliente();
