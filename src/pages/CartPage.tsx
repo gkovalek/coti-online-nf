@@ -182,6 +182,33 @@ export default function CartPage() {
       await supabase.from("venta_items").insert(ventaItems);
       await supabase.from("cotizaciones").update({ estado: "convertida" }).eq("id", cotizacionResult.id);
       const ventaItemsSnapshot = cotizacionResult.items.map((i: any) => ({ ...i }));
+      try {
+        await fetch("https://nueralforce.app.n8n.cloud/webhook/compras-avisos", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            venta_id: venta.id,
+            cliente_id: cotizacionResult.cliente_id,
+            cliente: cotizacionResult.cliente,
+            medio_pago: "transferencia",
+            total: cotizacionResult.total,
+            canal: "web",
+            estado: "confirmada",
+            created_at: venta.created_at,
+            cotizacion_id: cotizacionResult.id,
+            items: ventaItemsSnapshot.map((i: any) => ({
+              producto_id: i.producto_id,
+              nombre: i.nombre,
+              sku: i.sku,
+              cantidad: i.cantidad,
+              precio_unitario: i.precio_unitario,
+              subtotal: i.precio_unitario * i.cantidad,
+            })),
+          }),
+        });
+      } catch (webhookErr) {
+        console.error("Error notificando webhook compra (desde cotización):", webhookErr);
+      }
       clear();
       setCotizacionResult(null);
       setVentaResult({
