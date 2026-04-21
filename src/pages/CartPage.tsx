@@ -57,7 +57,8 @@ export default function CartPage() {
       }));
       const { error: itemsErr } = await supabase.from("cotizacion_items").insert(cotItems);
       if (itemsErr) throw itemsErr;
-      setCotizacionResult({ ...cot, items: cotItems, cliente: form });
+      setCotizacionResult({ ...cot, items: items.map((i) => ({ ...i })), cliente: form });
+      clear();
       toast.success("Cotización creada exitosamente");
     } catch (e: any) {
       toast.error(e.message || "Error al crear cotización");
