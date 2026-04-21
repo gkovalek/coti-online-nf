@@ -138,7 +138,7 @@ export default function CartPage() {
         .select()
         .single();
       if (error) throw error;
-      const ventaItems = items.map((i) => ({
+      const ventaItems = cotizacionResult.items.map((i: any) => ({
         venta_id: venta.id,
         producto_id: i.producto_id,
         cantidad: i.cantidad,
