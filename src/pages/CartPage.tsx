@@ -57,7 +57,8 @@ export default function CartPage() {
       }));
       const { error: itemsErr } = await supabase.from("cotizacion_items").insert(cotItems);
       if (itemsErr) throw itemsErr;
-      setCotizacionResult({ ...cot, items: cotItems, cliente: form });
+      setCotizacionResult({ ...cot, items: items.map((i) => ({ ...i })), cliente: form });
+      clear();
       toast.success("Cotización creada exitosamente");
     } catch (e: any) {
       toast.error(e.message || "Error al crear cotización");
@@ -137,7 +138,7 @@ export default function CartPage() {
         .select()
         .single();
       if (error) throw error;
-      const ventaItems = items.map((i) => ({
+      const ventaItems = cotizacionResult.items.map((i: any) => ({
         venta_id: venta.id,
         producto_id: i.producto_id,
         cantidad: i.cantidad,
@@ -180,7 +181,7 @@ export default function CartPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {items.map((i) => (
+                    {cotizacionResult.items.map((i: any) => (
                       <tr key={i.producto_id} className="border-t">
                         <td className="p-2">{i.nombre}</td>
                         <td className="p-2 text-right">{i.cantidad}</td>
