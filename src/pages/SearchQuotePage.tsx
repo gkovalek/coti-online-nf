@@ -148,6 +148,46 @@ export default function SearchQuotePage() {
     }
   };
 
+  if (ventaResult) {
+    return (
+      <PublicLayout>
+        <div className="container max-w-2xl py-12">
+          <Card>
+            <CardHeader className="text-center space-y-3">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-950">
+                <CheckCircle2 className="h-10 w-10 text-green-600 dark:text-green-500" />
+              </div>
+              <CardTitle className="text-2xl">¡Compra confirmada!</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="rounded-md border bg-muted/50 p-4 space-y-2 text-sm">
+                <p>
+                  <span className="text-muted-foreground">N° de venta: </span>
+                  <span className="font-mono font-semibold">{ventaResult.id}</span>
+                </p>
+                <p>
+                  <span className="text-muted-foreground">Cliente: </span>
+                  <span className="font-medium">{ventaResult.cliente.nombre}</span>
+                </p>
+                <p>
+                  <span className="text-muted-foreground">Total: </span>
+                  <span className="font-semibold">{formatARS(ventaResult.total)}</span>
+                </p>
+                <p>
+                  <span className="text-muted-foreground">Método de pago: </span>
+                  <span className="font-medium capitalize">{ventaResult.medio_pago}</span>
+                </p>
+              </div>
+              <Button className="w-full" onClick={() => navigate("/")}>
+                Volver al catálogo
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </PublicLayout>
+    );
+  }
+
   return (
     <PublicLayout>
       <div className="container max-w-2xl py-12">
