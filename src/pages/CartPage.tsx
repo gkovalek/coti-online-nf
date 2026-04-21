@@ -18,6 +18,7 @@ export default function CartPage() {
   const [medioPago, setMedioPago] = useState("transferencia");
   const [submitting, setSubmitting] = useState(false);
   const [cotizacionResult, setCotizacionResult] = useState<any>(null);
+  const [ventaResult, setVentaResult] = useState<any>(null);
   const navigate = useNavigate();
 
   const handleField = (field: string, val: string) => setForm((f) => ({ ...f, [field]: val }));
