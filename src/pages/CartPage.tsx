@@ -156,9 +156,16 @@ export default function CartPage() {
       }));
       await supabase.from("venta_items").insert(ventaItems);
       await supabase.from("cotizaciones").update({ estado: "convertida" }).eq("id", cotizacionResult.id);
+      const ventaItemsSnapshot = cotizacionResult.items.map((i: any) => ({ ...i }));
       clear();
+      setCotizacionResult(null);
+      setVentaResult({
+        ...venta,
+        items: ventaItemsSnapshot,
+        cliente: cotizacionResult.cliente,
+        medio_pago: "transferencia",
+      });
       toast.success("¡Compra confirmada desde cotización!");
-      navigate("/");
     } catch (e: any) {
       toast.error(e.message || "Error al confirmar compra");
     } finally {
