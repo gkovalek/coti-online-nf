@@ -22,6 +22,7 @@ export default function SearchQuotePage() {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [ventaResult, setVentaResult] = useState<any>(null);
   const navigate = useNavigate();
 
   const requestOtp = async () => {
