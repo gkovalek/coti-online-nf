@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { Search, CreditCard, Mail, ShieldCheck } from "lucide-react";
+import { Search, CreditCard, Mail, ShieldCheck, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
@@ -22,6 +22,7 @@ export default function SearchQuotePage() {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [ventaResult, setVentaResult] = useState<any>(null);
   const navigate = useNavigate();
 
   const requestOtp = async () => {
@@ -130,14 +131,62 @@ export default function SearchQuotePage() {
       }));
       await supabase.from("venta_items").insert(ventaItems);
       await supabase.from("cotizaciones").update({ estado: "convertida" }).eq("id", selected.id);
-      toast.success("¡Compra confirmada exitosamente!");
-      navigate("/");
+      const { data: cliente } = await supabase
+        .from("clientes")
+        .select("nombre, email")
+        .eq("id", selected.cliente_id)
+        .maybeSingle();
+      setVentaResult({
+        ...venta,
+        cliente: cliente || { nombre: "—", email },
+        medio_pago: "transferencia",
+      });
     } catch (e: any) {
       toast.error(e.message || "Error al confirmar compra");
     } finally {
       setSubmitting(false);
     }
   };
+
+  if (ventaResult) {
+    return (
+      <PublicLayout>
+        <div className="container max-w-2xl py-12">
+          <Card>
+            <CardHeader className="text-center space-y-3">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-950">
+                <CheckCircle2 className="h-10 w-10 text-green-600 dark:text-green-500" />
+              </div>
+              <CardTitle className="text-2xl">¡Compra confirmada!</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="rounded-md border bg-muted/50 p-4 space-y-2 text-sm">
+                <p>
+                  <span className="text-muted-foreground">N° de venta: </span>
+                  <span className="font-mono font-semibold">{ventaResult.id}</span>
+                </p>
+                <p>
+                  <span className="text-muted-foreground">Cliente: </span>
+                  <span className="font-medium">{ventaResult.cliente.nombre}</span>
+                </p>
+                <p>
+                  <span className="text-muted-foreground">Total: </span>
+                  <span className="font-semibold">{formatARS(ventaResult.total)}</span>
+                </p>
+                <p>
+                  <span className="text-muted-foreground">Método de pago: </span>
+                  <span className="font-medium capitalize">{ventaResult.medio_pago}</span>
+                </p>
+              </div>
+              <Button className="w-full" onClick={() => navigate("/")}>
+                Volver al catálogo
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </PublicLayout>
+    );
+  }
 
   return (
     <PublicLayout>

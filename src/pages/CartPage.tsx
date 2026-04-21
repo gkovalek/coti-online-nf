@@ -77,7 +77,15 @@ export default function CartPage() {
   };
 
   const handleBuy = async () => {
-    if (!form.nombre || !form.email) return toast.error("Nombre y email son obligatorios");
+    const requiredFields: Array<[keyof typeof form, string]> = [
+      ["nombre", "Nombre"],
+      ["email", "Email"],
+      ["telefono", "Teléfono"],
+      ["direccion", "Dirección"],
+    ];
+    for (const [key, label] of requiredFields) {
+      if (!form[key].trim()) return toast.error(`El campo ${label} es obligatorio`);
+    }
     setSubmitting(true);
     try {
       const clienteId = await getOrCreateCliente();
@@ -123,7 +131,7 @@ export default function CartPage() {
       const ventaItemsSnapshot = items.map((i) => ({ ...i }));
       clear();
       setVentaResult({ ...venta, items: ventaItemsSnapshot, cliente: form, medio_pago: medioPago });
-      toast.success("¡Compra confirmada!");
+      
     } catch (e: any) {
       toast.error(e.message || "Error al procesar compra");
     } finally {
@@ -165,7 +173,7 @@ export default function CartPage() {
         cliente: cotizacionResult.cliente,
         medio_pago: "transferencia",
       });
-      toast.success("¡Compra confirmada desde cotización!");
+      
     } catch (e: any) {
       toast.error(e.message || "Error al confirmar compra");
     } finally {
@@ -179,58 +187,29 @@ export default function CartPage() {
         <div className="container max-w-2xl py-12">
           <Card>
             <CardHeader className="text-center space-y-3">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-accent/10">
-                <CheckCircle2 className="h-10 w-10 text-accent" />
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-950">
+                <CheckCircle2 className="h-10 w-10 text-green-600 dark:text-green-500" />
               </div>
-              <CardTitle className="text-2xl">¡Compra Confirmada!</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Tu compra fue registrada exitosamente. Te enviaremos los detalles a tu email.
-              </p>
+              <CardTitle className="text-2xl">¡Compra confirmada!</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="rounded-md border bg-muted/50 p-4 space-y-1 text-sm">
+              <div className="rounded-md border bg-muted/50 p-4 space-y-2 text-sm">
                 <p>
                   <span className="text-muted-foreground">N° de venta: </span>
                   <span className="font-mono font-semibold">{ventaResult.id}</span>
                 </p>
                 <p>
                   <span className="text-muted-foreground">Cliente: </span>
-                  <span className="font-medium">{ventaResult.cliente.nombre}</span> ({ventaResult.cliente.email})
+                  <span className="font-medium">{ventaResult.cliente.nombre}</span>
                 </p>
                 <p>
-                  <span className="text-muted-foreground">Medio de pago: </span>
+                  <span className="text-muted-foreground">Total: </span>
+                  <span className="font-semibold">{formatARS(ventaResult.total)}</span>
+                </p>
+                <p>
+                  <span className="text-muted-foreground">Método de pago: </span>
                   <span className="font-medium capitalize">{ventaResult.medio_pago}</span>
                 </p>
-                <p>
-                  <span className="text-muted-foreground">Fecha: </span>
-                  {new Date(ventaResult.created_at).toLocaleString("es-AR")}
-                </p>
-              </div>
-              <div className="border rounded-md overflow-hidden">
-                <table className="w-full text-sm">
-                  <thead className="bg-muted">
-                    <tr>
-                      <th className="text-left p-2">Producto</th>
-                      <th className="text-right p-2">Cant.</th>
-                      <th className="text-right p-2">Subtotal</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {ventaResult.items.map((i: any) => (
-                      <tr key={i.producto_id} className="border-t">
-                        <td className="p-2">{i.nombre}</td>
-                        <td className="p-2 text-right">{i.cantidad}</td>
-                        <td className="p-2 text-right">{formatARS(i.precio_unitario * i.cantidad)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                  <tfoot className="bg-muted font-bold">
-                    <tr>
-                      <td colSpan={2} className="p-2 text-right">Total:</td>
-                      <td className="p-2 text-right">{formatARS(ventaResult.total)}</td>
-                    </tr>
-                  </tfoot>
-                </table>
               </div>
               <Button className="w-full" onClick={() => { setVentaResult(null); navigate("/"); }}>
                 Volver al catálogo
@@ -371,8 +350,8 @@ export default function CartPage() {
                       <h3 className="font-semibold text-sm">{mode === "quote" ? "Datos para Cotización" : "Datos de Compra"}</h3>
                       <Input placeholder="Nombre *" value={form.nombre} onChange={(e) => handleField("nombre", e.target.value)} />
                       <Input placeholder="Email *" type="email" value={form.email} onChange={(e) => handleField("email", e.target.value)} />
-                      <Input placeholder={mode === "quote" ? "Teléfono *" : "Teléfono"} value={form.telefono} onChange={(e) => handleField("telefono", e.target.value)} />
-                      <Input placeholder={mode === "quote" ? "Dirección *" : "Dirección"} value={form.direccion} onChange={(e) => handleField("direccion", e.target.value)} />
+                      <Input placeholder="Teléfono *" value={form.telefono} onChange={(e) => handleField("telefono", e.target.value)} />
+                      <Input placeholder="Dirección *" value={form.direccion} onChange={(e) => handleField("direccion", e.target.value)} />
                       {mode === "buy" && (
                         <Select value={medioPago} onValueChange={setMedioPago}>
                           <SelectTrigger><SelectValue /></SelectTrigger>
