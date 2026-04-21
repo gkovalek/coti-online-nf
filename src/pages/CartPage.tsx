@@ -131,7 +131,7 @@ export default function CartPage() {
       const ventaItemsSnapshot = items.map((i) => ({ ...i }));
       clear();
       setVentaResult({ ...venta, items: ventaItemsSnapshot, cliente: form, medio_pago: medioPago });
-      toast.success("¡Compra confirmada!");
+      
     } catch (e: any) {
       toast.error(e.message || "Error al procesar compra");
     } finally {
