@@ -181,7 +181,7 @@ export default function CartPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {items.map((i) => (
+                    {cotizacionResult.items.map((i: any) => (
                       <tr key={i.producto_id} className="border-t">
                         <td className="p-2">{i.nombre}</td>
                         <td className="p-2 text-right">{i.cantidad}</td>
