@@ -39,7 +39,15 @@ export default function CartPage() {
   };
 
   const handleQuote = async () => {
-    if (!form.nombre || !form.email) return toast.error("Nombre y email son obligatorios");
+    const requiredFields: Array<[keyof typeof form, string]> = [
+      ["nombre", "Nombre"],
+      ["email", "Email"],
+      ["telefono", "Teléfono"],
+      ["direccion", "Dirección"],
+    ];
+    for (const [key, label] of requiredFields) {
+      if (!form[key].trim()) return toast.error(`El campo ${label} es obligatorio`);
+    }
     setSubmitting(true);
     try {
       const clienteId = await getOrCreateCliente();
@@ -285,8 +293,8 @@ export default function CartPage() {
                       <h3 className="font-semibold text-sm">{mode === "quote" ? "Datos para Cotización" : "Datos de Compra"}</h3>
                       <Input placeholder="Nombre *" value={form.nombre} onChange={(e) => handleField("nombre", e.target.value)} />
                       <Input placeholder="Email *" type="email" value={form.email} onChange={(e) => handleField("email", e.target.value)} />
-                      <Input placeholder="Teléfono" value={form.telefono} onChange={(e) => handleField("telefono", e.target.value)} />
-                      <Input placeholder="Dirección" value={form.direccion} onChange={(e) => handleField("direccion", e.target.value)} />
+                      <Input placeholder={mode === "quote" ? "Teléfono *" : "Teléfono"} value={form.telefono} onChange={(e) => handleField("telefono", e.target.value)} />
+                      <Input placeholder={mode === "quote" ? "Dirección *" : "Dirección"} value={form.direccion} onChange={(e) => handleField("direccion", e.target.value)} />
                       {mode === "buy" && (
                         <Select value={medioPago} onValueChange={setMedioPago}>
                           <SelectTrigger><SelectValue /></SelectTrigger>
