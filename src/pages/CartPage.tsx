@@ -377,7 +377,7 @@ export default function CartPage() {
                           disabled={submitting}
                           onClick={mode === "quote" ? handleQuote : handleBuy}
                         >
-                          {submitting ? "Procesando..." : mode === "quote" ? "Generar Cotización" : "Confirmar Compra"}
+                          {submitting ? "Procesando..." : mode === "quote" ? "Generar Cotización" : "Confirmar Pedido"}
                         </Button>
                         <Button variant="outline" className="w-full" onClick={() => setMode("idle")}>Cancelar</Button>
                       </div>
