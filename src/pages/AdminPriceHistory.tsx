@@ -20,12 +20,38 @@ export default function AdminPriceHistory() {
   const load = async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
     else setLoading(true);
-    const { data } = await supabase
-      .from("vw_historial_precios")
-      .select("*")
+
+    // Leer directo de la tabla base + JOIN a productos para enriquecer.
+    // La vista vw_historial_precios estaba filtrando registros con fuente=email_sync.
+    const { data: rows, error } = await supabase
+      .from("historial_precios")
+      .select(`
+        id,
+        sku_norm,
+        precio_anterior,
+        precio_nuevo,
+        stock_anterior,
+        stock_nuevo,
+        fuente,
+        motivo,
+        fecha_cambio,
+        productos:productos!historial_precios_sku_norm_fkey(nombre, categoria)
+      `)
       .order("fecha_cambio", { ascending: false })
       .limit(200);
-    setData(data || []);
+
+    if (error) {
+      console.error("[AdminPriceHistory] error:", error);
+    }
+    console.log("[AdminPriceHistory] raw rows:", rows);
+
+    const normalized = (rows || []).map((r: any) => ({
+      ...r,
+      producto: r.productos?.nombre ?? null,
+      categoria: r.productos?.categoria ?? null,
+    }));
+
+    setData(normalized);
     setLoading(false);
     setRefreshing(false);
   };
