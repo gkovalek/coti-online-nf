@@ -21,34 +21,40 @@ export default function AdminPriceHistory() {
     if (isRefresh) setRefreshing(true);
     else setLoading(true);
 
-    // Leer directo de la tabla base + JOIN a productos para enriquecer.
-    // La vista vw_historial_precios estaba filtrando registros con fuente=email_sync.
+    // 1) Traer historial directo de la tabla base, SIN embed (el embed PostgREST
+    //    fallaba silenciosamente y devolvía 0 filas). Trae todas las fuentes.
     const { data: rows, error } = await supabase
       .from("historial_precios")
-      .select(`
-        id,
-        sku_norm,
-        precio_anterior,
-        precio_nuevo,
-        stock_anterior,
-        stock_nuevo,
-        fuente,
-        motivo,
-        fecha_cambio,
-        productos:productos!historial_precios_sku_norm_fkey(nombre, categoria)
-      `)
+      .select("id, sku_norm, precio_anterior, precio_nuevo, stock_anterior, stock_nuevo, fuente, motivo, fecha_cambio")
       .order("fecha_cambio", { ascending: false })
-      .limit(200);
+      .order("id", { ascending: false })
+      .limit(500);
 
     if (error) {
-      console.error("[AdminPriceHistory] error:", error);
+      console.error("[AdminPriceHistory] error historial:", error);
     }
-    console.log("[AdminPriceHistory] raw rows:", rows);
+    console.log("[AdminPriceHistory] raw rows:", rows?.length, rows);
+
+    // 2) Enriquecer con nombre/categoria de productos en una segunda query (sin join).
+    const skus = Array.from(new Set((rows || []).map((r: any) => r.sku_norm).filter(Boolean)));
+    let productMap: Record<string, { nombre: string | null; categoria: string | null }> = {};
+    if (skus.length > 0) {
+      const { data: prods, error: prodErr } = await supabase
+        .from("productos")
+        .select("sku_norm, nombre, categoria")
+        .in("sku_norm", skus);
+      if (prodErr) {
+        console.error("[AdminPriceHistory] error productos:", prodErr);
+      }
+      productMap = Object.fromEntries(
+        (prods || []).map((p: any) => [p.sku_norm, { nombre: p.nombre, categoria: p.categoria }])
+      );
+    }
 
     const normalized = (rows || []).map((r: any) => ({
       ...r,
-      producto: r.productos?.nombre ?? null,
-      categoria: r.productos?.categoria ?? null,
+      producto: productMap[r.sku_norm]?.nombre ?? null,
+      categoria: productMap[r.sku_norm]?.categoria ?? null,
     }));
 
     setData(normalized);
