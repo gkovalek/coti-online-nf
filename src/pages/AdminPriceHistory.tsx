@@ -1,51 +1,122 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { formatARS } from "@/lib/format";
 import { AdminLayout } from "@/components/AdminLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { RefreshCw, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+
+type SortKey = "producto" | "sku_norm" | "precio_anterior" | "precio_nuevo" | "stock_anterior" | "stock_nuevo" | "fuente" | "fecha_cambio";
+type SortDir = "asc" | "desc";
 
 export default function AdminPriceHistory() {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [sortKey, setSortKey] = useState<SortKey>("fecha_cambio");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
 
-  useEffect(() => {
-    supabase
+  const load = async (isRefresh = false) => {
+    if (isRefresh) setRefreshing(true);
+    else setLoading(true);
+    const { data } = await supabase
       .from("vw_historial_precios")
       .select("*")
       .order("fecha_cambio", { ascending: false })
-      .limit(200)
-      .then(({ data }) => {
-        setData(data || []);
-        setLoading(false);
-      });
+      .limit(200);
+    setData(data || []);
+    setLoading(false);
+    setRefreshing(false);
+  };
+
+  useEffect(() => {
+    load();
   }, []);
+
+  const toggleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("desc");
+    }
+  };
+
+  const sorted = useMemo(() => {
+    const arr = [...data];
+    arr.sort((a, b) => {
+      const av = a[sortKey];
+      const bv = b[sortKey];
+      if (av == null && bv == null) return 0;
+      if (av == null) return 1;
+      if (bv == null) return -1;
+      if (sortKey === "fecha_cambio") {
+        const ad = new Date(av).getTime();
+        const bd = new Date(bv).getTime();
+        return sortDir === "asc" ? ad - bd : bd - ad;
+      }
+      if (typeof av === "number" && typeof bv === "number") {
+        return sortDir === "asc" ? av - bv : bv - av;
+      }
+      const as = String(av).toLowerCase();
+      const bs = String(bv).toLowerCase();
+      if (as < bs) return sortDir === "asc" ? -1 : 1;
+      if (as > bs) return sortDir === "asc" ? 1 : -1;
+      return 0;
+    });
+    return arr;
+  }, [data, sortKey, sortDir]);
+
+  const SortIcon = ({ col }: { col: SortKey }) => {
+    if (sortKey !== col) return <ArrowUpDown className="h-3 w-3 opacity-40" />;
+    return sortDir === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />;
+  };
+
+  const SortableHead = ({ col, children, align = "left" }: { col: SortKey; children: React.ReactNode; align?: "left" | "right" }) => (
+    <TableHead className={align === "right" ? "text-right" : ""}>
+      <button
+        type="button"
+        onClick={() => toggleSort(col)}
+        className={`inline-flex items-center gap-1 hover:text-foreground transition-colors ${align === "right" ? "ml-auto" : ""}`}
+      >
+        {children}
+        <SortIcon col={col} />
+      </button>
+    </TableHead>
+  );
 
   return (
     <AdminLayout>
-      <h1 className="text-2xl font-bold mb-6">Historial de Precios</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">Historial de Precios</h1>
+        <Button onClick={() => load(true)} disabled={refreshing || loading} variant="outline">
+          <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+          {refreshing ? "Actualizando..." : "Actualizar"}
+        </Button>
+      </div>
       <Card>
         <CardContent className="p-0">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Producto</TableHead>
-                <TableHead>SKU</TableHead>
-                <TableHead className="text-right">Precio Anterior</TableHead>
-                <TableHead className="text-right">Precio Nuevo</TableHead>
-                <TableHead className="text-right">Stock Anterior</TableHead>
-                <TableHead className="text-right">Stock Nuevo</TableHead>
-                <TableHead>Fuente</TableHead>
+                <SortableHead col="producto">Producto</SortableHead>
+                <SortableHead col="sku_norm">SKU</SortableHead>
+                <SortableHead col="precio_anterior" align="right">Precio Anterior</SortableHead>
+                <SortableHead col="precio_nuevo" align="right">Precio Nuevo</SortableHead>
+                <SortableHead col="stock_anterior" align="right">Stock Anterior</SortableHead>
+                <SortableHead col="stock_nuevo" align="right">Stock Nuevo</SortableHead>
+                <SortableHead col="fuente">Fuente</SortableHead>
                 <TableHead>Motivo</TableHead>
-                <TableHead>Fecha</TableHead>
+                <SortableHead col="fecha_cambio">Fecha</SortableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
                 <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">Cargando...</TableCell></TableRow>
-              ) : data.length === 0 ? (
+              ) : sorted.length === 0 ? (
                 <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">Sin historial</TableCell></TableRow>
-              ) : data.map((r, i) => (
+              ) : sorted.map((r, i) => (
                 <TableRow key={i}>
                   <TableCell className="font-medium">{r.producto || "—"}</TableCell>
                   <TableCell className="text-xs text-muted-foreground">{r.sku_norm || "—"}</TableCell>
@@ -55,7 +126,17 @@ export default function AdminPriceHistory() {
                   <TableCell className="text-right">{r.stock_nuevo != null ? r.stock_nuevo : "—"}</TableCell>
                   <TableCell>{r.fuente || "—"}</TableCell>
                   <TableCell className="max-w-[200px] truncate">{r.motivo || "—"}</TableCell>
-                  <TableCell className="text-xs">{r.fecha_cambio ? new Date(r.fecha_cambio).toLocaleDateString("es-AR") : "—"}</TableCell>
+                  <TableCell className="text-xs whitespace-nowrap">
+                    {r.fecha_cambio
+                      ? new Date(r.fecha_cambio).toLocaleString("es-AR", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : "—"}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
