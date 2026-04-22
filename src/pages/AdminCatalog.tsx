@@ -30,10 +30,16 @@ export default function AdminCatalog() {
 
   const loadProducts = async () => {
     setLoading(true);
-    let q = supabase.from("vw_catalogo_vigente_img").select("*").order("producto");
+    // Lee misma vista que el catálogo público — fuente única de verdad.
+    // El cache-bust en el order asegura que PostgREST no devuelva una respuesta cacheada.
+    let q = supabase
+      .from("vw_catalogo_vigente_img")
+      .select("*")
+      .order("producto", { ascending: true });
     if (debouncedSearch) q = q.or(`producto.ilike.%${debouncedSearch}%,sku_norm.ilike.%${debouncedSearch}%`);
     const { data, error } = await q;
     if (error) toast.error(`Error cargando productos: ${error.message}`);
+    console.log("ADMIN CATALOG DATA:", data?.[0]);
     setProductos(data || []);
     setLoading(false);
   };
@@ -44,6 +50,19 @@ export default function AdminCatalog() {
   }, []);
 
   useEffect(() => { loadProducts(); }, [debouncedSearch]);
+
+  // Refetch cuando la pestaña vuelve a tomar foco — evita stale state si n8n actualizó precios
+  useEffect(() => {
+    const onFocus = () => loadProducts();
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") loadProducts();
+    });
+    return () => {
+      window.removeEventListener("focus", onFocus);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearch]);
 
   const openEdit = (p: any) => {
     setEditing(p);
@@ -101,17 +120,19 @@ export default function AdminCatalog() {
                 <TableHead>SKU</TableHead>
                 <TableHead>Categoría</TableHead>
                 <TableHead>Proveedor</TableHead>
-                <TableHead className="text-right">Precio</TableHead>
+                <TableHead className="text-right">Precio Proveedor</TableHead>
+                <TableHead className="text-right">Precio Venta</TableHead>
                 <TableHead className="text-right">Stock</TableHead>
+                <TableHead>Actualizado</TableHead>
                 <TableHead>Estado</TableHead>
                 <TableHead />
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">Cargando...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={11} className="text-center py-8 text-muted-foreground">Cargando...</TableCell></TableRow>
               ) : productos.length === 0 ? (
-                <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">Sin productos</TableCell></TableRow>
+                <TableRow><TableCell colSpan={11} className="text-center py-8 text-muted-foreground">Sin productos</TableCell></TableRow>
               ) : productos.map((p) => (
                 <TableRow key={p.producto_id}>
                   <TableCell>
@@ -130,10 +151,14 @@ export default function AdminCatalog() {
                   <TableCell className="text-xs text-muted-foreground">{p.sku_norm}</TableCell>
                   <TableCell>{p.categoria}</TableCell>
                   <TableCell>{p.proveedor}</TableCell>
-                  <TableCell className="text-right">{formatARS(p.precio_venta)}</TableCell>
+                  <TableCell className="text-right text-muted-foreground">{p.precio_proveedor != null ? formatARS(p.precio_proveedor) : "—"}</TableCell>
+                  <TableCell className="text-right font-medium">{formatARS(p.precio_venta)}</TableCell>
                   <TableCell className="text-right">
                     {p.stock} {p.unidad_medida}
                     {p.stock < 20 && <Badge variant="destructive" className="ml-2 text-[10px]">Bajo</Badge>}
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {p.fecha_actualizacion ? new Date(p.fecha_actualizacion).toLocaleDateString("es-AR") : "—"}
                   </TableCell>
                   <TableCell>
                     <Badge variant={p.status === "activo" ? "default" : "secondary"}>
