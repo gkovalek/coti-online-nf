@@ -35,26 +35,27 @@ export default function AdminPriceHistory() {
     }
     console.log("[AdminPriceHistory] raw rows:", rows?.length, rows);
 
-    // 2) Enriquecer con nombre/categoria de productos en una segunda query (sin join).
+    // 2) Enriquecer con nombre del producto en una segunda query (sin join).
+    //    Nota: la tabla productos no tiene columna `categoria` (es `categoria_id`),
+    //    así que solo traemos `nombre`. La UI no muestra categoría en esta vista.
     const skus = Array.from(new Set((rows || []).map((r: any) => r.sku_norm).filter(Boolean)));
-    let productMap: Record<string, { nombre: string | null; categoria: string | null }> = {};
+    let productMap: Record<string, { nombre: string | null }> = {};
     if (skus.length > 0) {
       const { data: prods, error: prodErr } = await supabase
         .from("productos")
-        .select("sku_norm, nombre, categoria")
+        .select("sku_norm, nombre")
         .in("sku_norm", skus);
       if (prodErr) {
         console.error("[AdminPriceHistory] error productos:", prodErr);
       }
       productMap = Object.fromEntries(
-        (prods || []).map((p: any) => [p.sku_norm, { nombre: p.nombre, categoria: p.categoria }])
+        (prods || []).map((p: any) => [p.sku_norm, { nombre: p.nombre }])
       );
     }
 
     const normalized = (rows || []).map((r: any) => ({
       ...r,
       producto: productMap[r.sku_norm]?.nombre ?? null,
-      categoria: productMap[r.sku_norm]?.categoria ?? null,
     }));
 
     setData(normalized);
