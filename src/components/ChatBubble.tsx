@@ -1,16 +1,36 @@
 import { useState, useRef, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { MessageCircle, X, Send, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { useCart } from "@/lib/cart";
 
-const WEBHOOK_URL = "https://nueralforce.app.n8n.cloud/webhook/37be487f-1e08-4c2b-abf6-097494a72f84";
+const WEBHOOK_URL =
+  import.meta.env.VITE_N8N_CHATBOT_WEBHOOK ||
+  "https://nueralforce.app.n8n.cloud/webhook-test/chatbot-web-holcim";
+
+const HISTORY_LIMIT = 10; // últimos N turnos enviados al backend
 
 type Message = {
   id: string;
   role: "user" | "bot";
   text: string;
 };
+
+function getSessionId(): string {
+  if (typeof window === "undefined") return Math.random().toString(36).slice(2);
+  const KEY = "chatbot_session_id";
+  let id = window.sessionStorage.getItem(KEY);
+  if (!id) {
+    id =
+      typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : Math.random().toString(36).slice(2);
+    window.sessionStorage.setItem(KEY, id);
+  }
+  return id;
+}
 
 export function ChatBubble() {
   const [open, setOpen] = useState(false);
@@ -20,12 +40,11 @@ export function ChatBubble() {
   const [messages, setMessages] = useState<Message[]>([
     { id: "welcome", role: "bot", text: "¡Hola! ¿En qué te ayudo?" },
   ]);
-  const sessionId = useRef<string>(
-    typeof crypto !== "undefined" && crypto.randomUUID
-      ? crypto.randomUUID()
-      : Math.random().toString(36).slice(2)
-  );
+  const sessionId = useRef<string>(getSessionId());
   const scrollRef = useRef<HTMLDivElement>(null);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const cartItems = useCart((s) => s.items);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -40,35 +59,92 @@ export function ChatBubble() {
     const text = input.trim();
     if (!text || loading) return;
     const userMsg: Message = { id: `${Date.now()}-u`, role: "user", text };
-    setMessages((prev) => [...prev, userMsg]);
+    const nextMessages = [...messages, userMsg];
+    setMessages(nextMessages);
     setInput("");
     setLoading(true);
+
+    // Historial corto: pares { role, text } sin el mensaje de bienvenida ni el actual
+    const historial = nextMessages
+      .filter((m) => m.id !== "welcome")
+      .slice(-1 - HISTORY_LIMIT, -1)
+      .map((m) => ({ role: m.role, text: m.text }));
+
+    const carrito = cartItems.map((i) => ({
+      producto_id: i.producto_id,
+      sku: i.sku,
+      nombre: i.nombre,
+      cantidad: i.cantidad,
+      precio_unitario: i.precio_unitario,
+    }));
+
+    const payload = {
+      mensaje: text,
+      session_id: sessionId.current,
+      pagina: location.pathname + location.search,
+      carrito,
+      historial,
+    };
+
     try {
       const res = await fetch(WEBHOOK_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: text,
-          sessionId: sessionId.current,
-          timestamp: new Date().toISOString(),
-        }),
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify(payload),
       });
+
       let reply = "Gracias por tu mensaje.";
+      let action: { type?: string; url?: string; path?: string } | null = null;
       const ct = res.headers.get("content-type") || "";
+
       if (ct.includes("application/json")) {
         const data = await res.json();
+        const obj = Array.isArray(data) ? data[0] ?? {} : data;
         reply =
-          data.reply ||
-          data.message ||
-          data.output ||
-          data.text ||
-          data.response ||
-          (typeof data === "string" ? data : reply);
+          obj.reply ||
+          obj.respuesta ||
+          obj.message ||
+          obj.mensaje ||
+          obj.output ||
+          obj.text ||
+          obj.response ||
+          (typeof obj === "string" ? obj : reply);
+        if (obj.action || obj.accion) action = obj.action || obj.accion;
       } else {
         const txt = await res.text();
-        if (txt) reply = txt;
+        if (txt) {
+          // intentar parsear texto como JSON por si n8n no setea content-type
+          try {
+            const data = JSON.parse(txt);
+            const obj = Array.isArray(data) ? data[0] ?? {} : data;
+            reply =
+              obj.reply ||
+              obj.respuesta ||
+              obj.message ||
+              obj.mensaje ||
+              obj.output ||
+              obj.text ||
+              obj.response ||
+              txt;
+            if (obj.action || obj.accion) action = obj.action || obj.accion;
+          } catch {
+            reply = txt;
+          }
+        }
       }
+
       setMessages((prev) => [...prev, { id: `${Date.now()}-b`, role: "bot", text: reply }]);
+
+      // Acciones opcionales devueltas por el backend
+      if (action?.type) {
+        if (action.type === "navigate" && action.path) {
+          navigate(action.path);
+        } else if (action.type === "open_url" && action.url) {
+          window.open(action.url, "_blank", "noopener,noreferrer");
+        } else if (action.type === "close_chat") {
+          setOpen(false);
+        }
+      }
     } catch (e) {
       setMessages((prev) => [
         ...prev,
