@@ -8,7 +8,7 @@ import { useCart } from "@/lib/cart";
 
 const WEBHOOK_URL =
   import.meta.env.VITE_N8N_CHATBOT_WEBHOOK ||
-  "https://nueralforce.app.n8n.cloud/webhook-test/chatbot-web-holcim";
+  "https://nueralforce.app.n8n.cloud/webhook/chatbot-web-holcim";
 
 const HISTORY_LIMIT = 10; // últimos N turnos enviados al backend
 
