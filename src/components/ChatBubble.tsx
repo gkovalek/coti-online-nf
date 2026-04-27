@@ -95,7 +95,20 @@ export function ChatBubble() {
 
       let reply = "Gracias por tu mensaje.";
       let action: { type?: string; url?: string; path?: string } | null = null;
+      let accionNombre: string | null = null;
       const ct = res.headers.get("content-type") || "";
+
+      const extractAccion = (obj: any) => {
+        const raw = obj?.action ?? obj?.accion;
+        if (!raw) return;
+        if (typeof raw === "string") {
+          accionNombre = raw;
+        } else if (typeof raw === "object") {
+          action = raw;
+          if (typeof raw.name === "string") accionNombre = raw.name;
+          if (typeof raw.nombre === "string") accionNombre = raw.nombre;
+        }
+      };
 
       if (ct.includes("application/json")) {
         const data = await res.json();
@@ -109,7 +122,7 @@ export function ChatBubble() {
           obj.text ||
           obj.response ||
           (typeof obj === "string" ? obj : reply);
-        if (obj.action || obj.accion) action = obj.action || obj.accion;
+        extractAccion(obj);
       } else {
         const txt = await res.text();
         if (txt) {
@@ -126,7 +139,7 @@ export function ChatBubble() {
               obj.text ||
               obj.response ||
               txt;
-            if (obj.action || obj.accion) action = obj.action || obj.accion;
+            extractAccion(obj);
           } catch {
             reply = txt;
           }
@@ -143,6 +156,24 @@ export function ChatBubble() {
           window.open(action.url, "_blank", "noopener,noreferrer");
         } else if (action.type === "close_chat") {
           setOpen(false);
+        }
+      }
+
+      // Acciones nominales (string) devueltas por el backend
+      if (accionNombre) {
+        switch (accionNombre) {
+          case "abrir_carrito":
+            navigate("/carrito");
+            break;
+          case "abrir_catalogo":
+            navigate("/");
+            break;
+          case "abrir_mis_cotizaciones":
+            navigate("/buscar-cotizacion");
+            break;
+          case "derivar_humano":
+            // Marcador para derivación a humano; sin cambios de UI por ahora
+            break;
         }
       }
     } catch (e) {
