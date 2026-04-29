@@ -3,7 +3,16 @@ import { supabase } from "@/lib/supabase";
 import { formatARS } from "@/lib/format";
 import { AdminLayout } from "@/components/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DollarSign, ShoppingCart, FileText, TrendingUp, Clock, Hourglass } from "lucide-react";
+
+interface LowStockProduct {
+  id: string;
+  producto: string;
+  sku_norm: string | null;
+  stock: number;
+}
 
 interface DashboardKPIs {
   cantidad_ventas: number;
