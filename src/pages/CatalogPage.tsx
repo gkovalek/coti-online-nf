@@ -211,17 +211,16 @@ export default function CatalogPage() {
                           disabled={p.stock <= 0}
                           onClick={() => {
                             const qty = getQty(p.producto_id);
-                            for (let i = 0; i < qty; i++) {
                             addItem({
                               producto_id: p.producto_id,
                               nombre: p.producto,
                               sku: p.sku_norm,
-                              precio_unitario: p.precio_venta,
-                              stock_disponible: p.stock,
-                              imagen_url: p.imagen_url,
+                              precio_unitario: Number(p.precio_venta) || 0,
+                              stock_disponible: Number(p.stock) || 0,
+                              imagen_url: p.imagen_url ?? null,
                               liquidacion_activa: p.liquidacion_activa ?? false,
+                              cantidad: qty,
                             });
-                            }
                             setQty(p.producto_id, 1, p.stock);
                             toast.success(`${qty} item(s) agregado(s) al carrito`);
                           }}
