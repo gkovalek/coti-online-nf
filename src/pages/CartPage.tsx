@@ -24,6 +24,9 @@ export default function CartPage() {
   const [ventaResult, setVentaResult] = useState<any>(null);
   const navigate = useNavigate();
 
+  const subtotal = total();
+  const desc = calcularDescuento(subtotal);
+
   const handleField = (field: string, val: string) => setForm((f) => ({ ...f, [field]: val }));
 
   const getOrCreateCliente = async () => {
