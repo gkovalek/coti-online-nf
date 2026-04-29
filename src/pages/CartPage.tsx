@@ -457,7 +457,7 @@ export default function CartPage() {
                           <Sparkles className="h-4 w-4 text-accent shrink-0 mt-0.5" />
                           <div className="space-y-0.5">
                             <p className="font-medium">
-                              Superando {formatARS(desc.umbral)} obtenés {DESC_PCT_LABEL}% de descuento automático.
+                              Superando {formatARS(desc.umbral)} obtenés {DESCUENTO_PORCENTAJE}% de descuento automático.
                             </p>
                             <p className="text-muted-foreground">
                               Te faltan <span className="font-semibold text-foreground">{formatARS(desc.falta)}</span> para acceder al beneficio.
