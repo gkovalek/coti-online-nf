@@ -294,9 +294,21 @@ export default function CartPage() {
                   <span className="text-muted-foreground">Cliente: </span>
                   <span className="font-medium">{ventaResult.cliente.nombre}</span>
                 </p>
+                {(ventaResult._desc?.aplica ?? (ventaResult.descuento_monto > 0)) && (
+                  <>
+                    <p>
+                      <span className="text-muted-foreground">Subtotal: </span>
+                      <span className="font-medium">{formatARS(ventaResult._desc?.subtotal ?? ventaResult.subtotal)}</span>
+                    </p>
+                    <p className="text-accent">
+                      <span>Descuento mayorista {ventaResult._desc?.porcentaje ?? ventaResult.descuento_porcentaje}%: </span>
+                      <span className="font-medium">- {formatARS(ventaResult._desc?.descuento_monto ?? ventaResult.descuento_monto)}</span>
+                    </p>
+                  </>
+                )}
                 <p>
-                  <span className="text-muted-foreground">Total: </span>
-                  <span className="font-semibold">{formatARS(ventaResult.total)}</span>
+                  <span className="text-muted-foreground">Total final: </span>
+                  <span className="font-semibold">{formatARS(ventaResult._desc?.total_final ?? ventaResult.total_final ?? ventaResult.total)}</span>
                 </p>
                 <p>
                   <span className="text-muted-foreground">Método de pago: </span>
