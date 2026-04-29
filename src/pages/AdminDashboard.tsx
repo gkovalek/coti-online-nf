@@ -135,6 +135,39 @@ export default function AdminDashboard() {
               {cotizacionesCards.map(renderCard)}
             </div>
           </section>
+          <section>
+            <h2 className="text-lg font-semibold mb-3 text-foreground">⚠️ Productos con stock bajo</h2>
+            {lowStock.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Todos los productos tienen stock suficiente</p>
+            ) : (
+              <Card>
+                <CardContent className="p-0">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Producto</TableHead>
+                        <TableHead>SKU</TableHead>
+                        <TableHead>Stock actual</TableHead>
+                        <TableHead>Estado</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {lowStock.map((p) => (
+                        <TableRow key={p.id}>
+                          <TableCell className="font-medium">{p.producto}</TableCell>
+                          <TableCell className="text-xs text-muted-foreground">{p.sku_norm || "—"}</TableCell>
+                          <TableCell>{p.stock}</TableCell>
+                          <TableCell>
+                            <Badge variant="destructive">Stock bajo</Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            )}
+          </section>
         </div>
       )}
     </AdminLayout>
