@@ -18,7 +18,7 @@ export default function AdminQuotes() {
     const load = async () => {
       const { data: cots } = await supabase
         .from("cotizaciones")
-        .select("*, clientes(nombre, email)")
+        .select("*, subtotal, descuento_porcentaje, descuento_monto, total_final, clientes(nombre, email)")
         .order("created_at", { ascending: false });
       const list = cots || [];
       setCotizaciones(list);
@@ -103,6 +103,7 @@ export default function AdminQuotes() {
           {items.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground text-sm">Cargando items...</div>
           ) : (
+            <>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -125,6 +126,23 @@ export default function AdminQuotes() {
                 ))}
               </TableBody>
             </Table>
+            <div className="mt-4 rounded-md border bg-muted/40 p-4 space-y-1.5 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Subtotal</span>
+                <span className="font-medium">{formatARS(selected?.subtotal ?? selected?.total ?? 0)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Descuento</span>
+                <span className="font-medium text-primary">
+                  {Number(selected?.descuento_porcentaje || 0)}% — {formatARS(selected?.descuento_monto || 0)}
+                </span>
+              </div>
+              <div className="flex justify-between border-t pt-2 mt-2">
+                <span className="font-semibold">Total final</span>
+                <span className="font-bold">{formatARS(selected?.total_final ?? selected?.total ?? 0)}</span>
+              </div>
+            </div>
+            </>
           )}
         </DialogContent>
       </Dialog>
