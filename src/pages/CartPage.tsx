@@ -126,7 +126,17 @@ export default function CartPage() {
       const clienteId = await getOrCreateCliente();
       const { data: venta, error } = await supabase
         .from("ventas")
-        .insert({ cliente_id: clienteId, estado: "confirmada", total: total(), canal: "web", medio_pago: medioPago })
+        .insert({
+          cliente_id: clienteId,
+          estado: "confirmada",
+          total: desc.total_final,
+          subtotal: desc.subtotal,
+          descuento_porcentaje: desc.porcentaje,
+          descuento_monto: desc.descuento_monto,
+          total_final: desc.total_final,
+          canal: "web",
+          medio_pago: medioPago,
+        })
         .select()
         .single();
       if (error) throw error;
@@ -146,7 +156,11 @@ export default function CartPage() {
             cliente_id: clienteId,
             cliente: form,
             medio_pago: medioPago,
-            total: total(),
+            subtotal: desc.subtotal,
+            descuento_porcentaje: desc.porcentaje,
+            descuento_monto: desc.descuento_monto,
+            total_final: desc.total_final,
+            total: desc.total_final,
             canal: "web",
             estado: "confirmada",
             created_at: venta.created_at,
@@ -164,8 +178,9 @@ export default function CartPage() {
         console.error("Error notificando webhook:", webhookErr);
       }
       const ventaItemsSnapshot = items.map((i) => ({ ...i }));
+      const descSnapshot = desc;
       clear();
-      setVentaResult({ ...venta, items: ventaItemsSnapshot, cliente: form, medio_pago: medioPago });
+      setVentaResult({ ...venta, items: ventaItemsSnapshot, cliente: form, medio_pago: medioPago, _desc: descSnapshot });
       
     } catch (e: any) {
       toast.error(e.message || "Error al procesar compra");
