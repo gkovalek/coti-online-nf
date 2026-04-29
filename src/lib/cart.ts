@@ -8,6 +8,7 @@ export interface CartItem {
   cantidad: number;
   stock_disponible: number;
   imagen_url?: string | null;
+  liquidacion_activa?: boolean | null;
 }
 
 interface CartStore {

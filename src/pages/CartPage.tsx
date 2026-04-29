@@ -9,8 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trash2, Minus, Plus, FileText, CreditCard, CheckCircle2 } from "lucide-react";
+import { Trash2, Minus, Plus, FileText, CreditCard, CheckCircle2, Sparkles, BadgePercent } from "lucide-react";
 import { toast } from "sonner";
+import { calcularDescuento, DESCUENTO_PORCENTAJE } from "@/lib/discount";
+import { Badge } from "@/components/ui/badge";
 
 export default function CartPage() {
   const { items, removeItem, updateQty, clear, total } = useCart();
@@ -21,6 +23,9 @@ export default function CartPage() {
   const [cotizacionResult, setCotizacionResult] = useState<any>(null);
   const [ventaResult, setVentaResult] = useState<any>(null);
   const navigate = useNavigate();
+
+  const subtotal = total();
+  const desc = calcularDescuento(subtotal);
 
   const handleField = (field: string, val: string) => setForm((f) => ({ ...f, [field]: val }));
 
@@ -55,7 +60,16 @@ export default function CartPage() {
       const clienteId = await getOrCreateCliente();
       const { data: cot, error } = await supabase
         .from("cotizaciones")
-        .insert({ cliente_id: clienteId, estado: "pendiente", total: total(), canal: "web" })
+        .insert({
+          cliente_id: clienteId,
+          estado: "pendiente",
+          total: desc.total_final,
+          subtotal: desc.subtotal,
+          descuento_porcentaje: desc.porcentaje,
+          descuento_monto: desc.descuento_monto,
+          total_final: desc.total_final,
+          canal: "web",
+        })
         .select()
         .single();
       if (error) throw error;
@@ -75,7 +89,11 @@ export default function CartPage() {
             id: cot.id,
             cliente_id: clienteId,
             numero_cotizacion: (cot as any).numero_cotizacion ?? (cot as any).numero ?? null,
-            total: cot.total,
+            subtotal: desc.subtotal,
+            descuento_porcentaje: desc.porcentaje,
+            descuento_monto: desc.descuento_monto,
+            total_final: desc.total_final,
+            total: desc.total_final,
             estado: "pendiente",
             created_at: cot.created_at,
           }),
@@ -83,7 +101,7 @@ export default function CartPage() {
       } catch (webhookErr) {
         console.error("Error notificando webhook cotización:", webhookErr);
       }
-      setCotizacionResult({ ...cot, items: items.map((i) => ({ ...i })), cliente: form });
+      setCotizacionResult({ ...cot, items: items.map((i) => ({ ...i })), cliente: form, _desc: desc });
       clear();
       toast.success("Cotización creada exitosamente");
     } catch (e: any) {
@@ -108,7 +126,17 @@ export default function CartPage() {
       const clienteId = await getOrCreateCliente();
       const { data: venta, error } = await supabase
         .from("ventas")
-        .insert({ cliente_id: clienteId, estado: "confirmada", total: total(), canal: "web", medio_pago: medioPago })
+        .insert({
+          cliente_id: clienteId,
+          estado: "confirmada",
+          total: desc.total_final,
+          subtotal: desc.subtotal,
+          descuento_porcentaje: desc.porcentaje,
+          descuento_monto: desc.descuento_monto,
+          total_final: desc.total_final,
+          canal: "web",
+          medio_pago: medioPago,
+        })
         .select()
         .single();
       if (error) throw error;
@@ -128,7 +156,11 @@ export default function CartPage() {
             cliente_id: clienteId,
             cliente: form,
             medio_pago: medioPago,
-            total: total(),
+            subtotal: desc.subtotal,
+            descuento_porcentaje: desc.porcentaje,
+            descuento_monto: desc.descuento_monto,
+            total_final: desc.total_final,
+            total: desc.total_final,
             canal: "web",
             estado: "confirmada",
             created_at: venta.created_at,
@@ -146,8 +178,9 @@ export default function CartPage() {
         console.error("Error notificando webhook:", webhookErr);
       }
       const ventaItemsSnapshot = items.map((i) => ({ ...i }));
+      const descSnapshot = desc;
       clear();
-      setVentaResult({ ...venta, items: ventaItemsSnapshot, cliente: form, medio_pago: medioPago });
+      setVentaResult({ ...venta, items: ventaItemsSnapshot, cliente: form, medio_pago: medioPago, _desc: descSnapshot });
       
     } catch (e: any) {
       toast.error(e.message || "Error al procesar compra");
@@ -160,13 +193,23 @@ export default function CartPage() {
     if (!cotizacionResult) return;
     setSubmitting(true);
     try {
+      const cd = cotizacionResult._desc as ReturnType<typeof calcularDescuento> | undefined;
+      const subtotalQ = cd?.subtotal ?? cotizacionResult.subtotal ?? cotizacionResult.total;
+      const descMontoQ = cd?.descuento_monto ?? cotizacionResult.descuento_monto ?? 0;
+      const descPctQ = cd?.porcentaje ?? cotizacionResult.descuento_porcentaje ?? 0;
+      const totalFinalQ = cd?.total_final ?? cotizacionResult.total_final ?? cotizacionResult.total;
+
       const { data: venta, error } = await supabase
         .from("ventas")
         .insert({
           cliente_id: cotizacionResult.cliente_id,
           cotizacion_id: cotizacionResult.id,
           estado: "confirmada",
-          total: cotizacionResult.total,
+          total: totalFinalQ,
+          subtotal: subtotalQ,
+          descuento_porcentaje: descPctQ,
+          descuento_monto: descMontoQ,
+          total_final: totalFinalQ,
           canal: "web",
           medio_pago: "transferencia",
         })
@@ -191,7 +234,11 @@ export default function CartPage() {
             cliente_id: cotizacionResult.cliente_id,
             cliente: cotizacionResult.cliente,
             medio_pago: "transferencia",
-            total: cotizacionResult.total,
+            subtotal: subtotalQ,
+            descuento_porcentaje: descPctQ,
+            descuento_monto: descMontoQ,
+            total_final: totalFinalQ,
+            total: totalFinalQ,
             canal: "web",
             estado: "confirmada",
             created_at: venta.created_at,
@@ -216,6 +263,7 @@ export default function CartPage() {
         items: ventaItemsSnapshot,
         cliente: cotizacionResult.cliente,
         medio_pago: "transferencia",
+        _desc: cd,
       });
       
     } catch (e: any) {
@@ -246,9 +294,21 @@ export default function CartPage() {
                   <span className="text-muted-foreground">Cliente: </span>
                   <span className="font-medium">{ventaResult.cliente.nombre}</span>
                 </p>
+                {(ventaResult._desc?.aplica ?? (ventaResult.descuento_monto > 0)) && (
+                  <>
+                    <p>
+                      <span className="text-muted-foreground">Subtotal: </span>
+                      <span className="font-medium">{formatARS(ventaResult._desc?.subtotal ?? ventaResult.subtotal)}</span>
+                    </p>
+                    <p className="text-accent">
+                      <span>Descuento mayorista {ventaResult._desc?.porcentaje ?? ventaResult.descuento_porcentaje}%: </span>
+                      <span className="font-medium">- {formatARS(ventaResult._desc?.descuento_monto ?? ventaResult.descuento_monto)}</span>
+                    </p>
+                  </>
+                )}
                 <p>
-                  <span className="text-muted-foreground">Total: </span>
-                  <span className="font-semibold">{formatARS(ventaResult.total)}</span>
+                  <span className="text-muted-foreground">Total final: </span>
+                  <span className="font-semibold">{formatARS(ventaResult._desc?.total_final ?? ventaResult.total_final ?? ventaResult.total)}</span>
                 </p>
                 <p>
                   <span className="text-muted-foreground">Método de pago: </span>
@@ -306,10 +366,24 @@ export default function CartPage() {
                       </tr>
                     ))}
                   </tbody>
-                  <tfoot className="bg-muted font-bold">
+                  <tfoot className="bg-muted">
                     <tr>
-                      <td colSpan={3} className="p-2 text-right">Total:</td>
-                      <td className="p-2 text-right">{formatARS(cotizacionResult.total)}</td>
+                      <td colSpan={3} className="p-2 text-right text-muted-foreground">Subtotal</td>
+                      <td className="p-2 text-right">{formatARS(cotizacionResult._desc?.subtotal ?? cotizacionResult.subtotal ?? cotizacionResult.total)}</td>
+                    </tr>
+                    {(cotizacionResult._desc?.aplica ?? (cotizacionResult.descuento_monto > 0)) && (
+                      <tr>
+                        <td colSpan={3} className="p-2 text-right text-accent">
+                          Descuento mayorista {cotizacionResult._desc?.porcentaje ?? cotizacionResult.descuento_porcentaje}%
+                        </td>
+                        <td className="p-2 text-right text-accent">
+                          - {formatARS(cotizacionResult._desc?.descuento_monto ?? cotizacionResult.descuento_monto)}
+                        </td>
+                      </tr>
+                    )}
+                    <tr className="font-bold">
+                      <td colSpan={3} className="p-2 text-right">Total final:</td>
+                      <td className="p-2 text-right">{formatARS(cotizacionResult._desc?.total_final ?? cotizacionResult.total_final ?? cotizacionResult.total)}</td>
                     </tr>
                   </tfoot>
                 </table>
@@ -380,9 +454,44 @@ export default function CartPage() {
             <div className="space-y-4">
               <Card>
                 <CardContent className="p-5 space-y-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Total</p>
-                    <p className="text-2xl font-bold">{formatARS(total())}</p>
+                  <div className="space-y-2 rounded-lg border bg-muted/40 p-3">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Subtotal</span>
+                      <span className="font-medium">{formatARS(desc.subtotal)}</span>
+                    </div>
+                    {desc.aplica ? (
+                      <>
+                        <div className="flex items-center justify-between text-sm text-accent">
+                          <span className="flex items-center gap-1">
+                            <BadgePercent className="h-3.5 w-3.5" />
+                            Descuento mayorista {desc.porcentaje}%
+                          </span>
+                          <span className="font-medium">- {formatARS(desc.descuento_monto)}</span>
+                        </div>
+                        <div className="border-t pt-2 flex items-end justify-between">
+                          <span className="text-sm text-muted-foreground">Total final</span>
+                          <span className="text-2xl font-bold">{formatARS(desc.total_final)}</span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="border-t pt-2 flex items-end justify-between">
+                          <span className="text-sm text-muted-foreground">Total</span>
+                          <span className="text-2xl font-bold">{formatARS(desc.total_final)}</span>
+                        </div>
+                        <div className="rounded-md bg-accent/10 border border-accent/30 p-2.5 text-xs text-foreground/90 flex gap-2">
+                          <Sparkles className="h-4 w-4 text-accent shrink-0 mt-0.5" />
+                          <div className="space-y-0.5">
+                            <p className="font-medium">
+                              Superando {formatARS(desc.umbral)} obtenés {DESCUENTO_PORCENTAJE}% de descuento automático.
+                            </p>
+                            <p className="text-muted-foreground">
+                              Te faltan <span className="font-semibold text-foreground">{formatARS(desc.falta)}</span> para acceder al beneficio.
+                            </p>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
 
                   {mode === "idle" && (

@@ -159,7 +159,14 @@ export default function CatalogPage() {
 
                   <CardContent className="p-5 flex flex-col gap-2">
                     <div>
-                      <h3 className="font-semibold text-[15px] leading-snug text-foreground line-clamp-2">{p.producto}</h3>
+                      <div className="flex items-start justify-between gap-2">
+                        <h3 className="font-semibold text-[15px] leading-snug text-foreground line-clamp-2">{p.producto}</h3>
+                        {p.liquidacion_activa && (
+                          <Badge className="text-[10px] bg-destructive text-destructive-foreground hover:bg-destructive/90 shrink-0">
+                            Liquidación
+                          </Badge>
+                        )}
+                      </div>
                       <p className="text-[11px] text-muted-foreground/50 mt-0.5 font-mono tracking-wide">{p.sku_norm}</p>
                     </div>
 
@@ -212,6 +219,7 @@ export default function CatalogPage() {
                               precio_unitario: p.precio_venta,
                               stock_disponible: p.stock,
                               imagen_url: p.imagen_url,
+                              liquidacion_activa: p.liquidacion_activa ?? false,
                             });
                             }
                             setQty(p.producto_id, 1, p.stock);
