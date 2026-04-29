@@ -9,7 +9,7 @@ import { DollarSign, ShoppingCart, FileText, TrendingUp, Clock, Hourglass } from
 
 interface LowStockProduct {
   id: string;
-  producto: string;
+  nombre: string;
   sku_norm: string | null;
   stock: number;
 }
@@ -78,7 +78,7 @@ export default function AdminDashboard() {
     const fetchLowStock = async () => {
       const { data } = await supabase
         .from("productos")
-        .select("id, producto, sku_norm, stock")
+        .select("id, nombre, sku_norm, stock")
         .lte("stock", 20)
         .order("stock", { ascending: true });
       setLowStock((data as LowStockProduct[]) || []);
@@ -154,7 +154,7 @@ export default function AdminDashboard() {
                     <TableBody>
                       {lowStock.map((p) => (
                         <TableRow key={p.id}>
-                          <TableCell className="font-medium">{p.producto}</TableCell>
+                          <TableCell className="font-medium">{p.nombre}</TableCell>
                           <TableCell className="text-xs text-muted-foreground">{p.sku_norm || "—"}</TableCell>
                           <TableCell>{p.stock}</TableCell>
                           <TableCell>
