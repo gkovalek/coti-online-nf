@@ -75,7 +75,17 @@ export default function AdminDashboard() {
       setLoading(false);
     };
 
+    const fetchLowStock = async () => {
+      const { data } = await supabase
+        .from("productos")
+        .select("id, producto, sku_norm, stock")
+        .lte("stock", 20)
+        .order("stock", { ascending: true });
+      setLowStock((data as LowStockProduct[]) || []);
+    };
+
     fetchKPIs();
+    fetchLowStock();
   }, []);
 
   const ventasCards = kpis
