@@ -428,9 +428,44 @@ export default function CartPage() {
             <div className="space-y-4">
               <Card>
                 <CardContent className="p-5 space-y-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Total</p>
-                    <p className="text-2xl font-bold">{formatARS(total())}</p>
+                  <div className="space-y-2 rounded-lg border bg-muted/40 p-3">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Subtotal</span>
+                      <span className="font-medium">{formatARS(desc.subtotal)}</span>
+                    </div>
+                    {desc.aplica ? (
+                      <>
+                        <div className="flex items-center justify-between text-sm text-accent">
+                          <span className="flex items-center gap-1">
+                            <BadgePercent className="h-3.5 w-3.5" />
+                            Descuento mayorista {desc.porcentaje}%
+                          </span>
+                          <span className="font-medium">- {formatARS(desc.descuento_monto)}</span>
+                        </div>
+                        <div className="border-t pt-2 flex items-end justify-between">
+                          <span className="text-sm text-muted-foreground">Total final</span>
+                          <span className="text-2xl font-bold">{formatARS(desc.total_final)}</span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="border-t pt-2 flex items-end justify-between">
+                          <span className="text-sm text-muted-foreground">Total</span>
+                          <span className="text-2xl font-bold">{formatARS(desc.total_final)}</span>
+                        </div>
+                        <div className="rounded-md bg-accent/10 border border-accent/30 p-2.5 text-xs text-foreground/90 flex gap-2">
+                          <Sparkles className="h-4 w-4 text-accent shrink-0 mt-0.5" />
+                          <div className="space-y-0.5">
+                            <p className="font-medium">
+                              Superando {formatARS(desc.umbral)} obtenés {DESC_PCT_LABEL}% de descuento automático.
+                            </p>
+                            <p className="text-muted-foreground">
+                              Te faltan <span className="font-semibold text-foreground">{formatARS(desc.falta)}</span> para acceder al beneficio.
+                            </p>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
 
                   {mode === "idle" && (
