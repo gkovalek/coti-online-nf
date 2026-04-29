@@ -18,7 +18,7 @@ export default function AdminQuotes() {
     const load = async () => {
       const { data: cots } = await supabase
         .from("cotizaciones")
-        .select("*, clientes(nombre, email)")
+        .select("*, subtotal, descuento_porcentaje, descuento_monto, total_final, clientes(nombre, email)")
         .order("created_at", { ascending: false });
       const list = cots || [];
       setCotizaciones(list);
@@ -103,6 +103,7 @@ export default function AdminQuotes() {
           {items.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground text-sm">Cargando items...</div>
           ) : (
+            <>
             <Table>
               <TableHeader>
                 <TableRow>
