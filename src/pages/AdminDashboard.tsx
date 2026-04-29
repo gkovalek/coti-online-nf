@@ -26,6 +26,7 @@ interface DashboardKPIs {
 export default function AdminDashboard() {
   const [kpis, setKpis] = useState<DashboardKPIs | null>(null);
   const [loading, setLoading] = useState(true);
+  const [lowStock, setLowStock] = useState<LowStockProduct[]>([]);
 
   useEffect(() => {
     const fetchKPIs = async () => {
