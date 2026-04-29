@@ -193,13 +193,23 @@ export default function CartPage() {
     if (!cotizacionResult) return;
     setSubmitting(true);
     try {
+      const cd = cotizacionResult._desc as ReturnType<typeof calcularDescuento> | undefined;
+      const subtotalQ = cd?.subtotal ?? cotizacionResult.subtotal ?? cotizacionResult.total;
+      const descMontoQ = cd?.descuento_monto ?? cotizacionResult.descuento_monto ?? 0;
+      const descPctQ = cd?.porcentaje ?? cotizacionResult.descuento_porcentaje ?? 0;
+      const totalFinalQ = cd?.total_final ?? cotizacionResult.total_final ?? cotizacionResult.total;
+
       const { data: venta, error } = await supabase
         .from("ventas")
         .insert({
           cliente_id: cotizacionResult.cliente_id,
           cotizacion_id: cotizacionResult.id,
           estado: "confirmada",
-          total: cotizacionResult.total,
+          total: totalFinalQ,
+          subtotal: subtotalQ,
+          descuento_porcentaje: descPctQ,
+          descuento_monto: descMontoQ,
+          total_final: totalFinalQ,
           canal: "web",
           medio_pago: "transferencia",
         })
@@ -224,7 +234,11 @@ export default function CartPage() {
             cliente_id: cotizacionResult.cliente_id,
             cliente: cotizacionResult.cliente,
             medio_pago: "transferencia",
-            total: cotizacionResult.total,
+            subtotal: subtotalQ,
+            descuento_porcentaje: descPctQ,
+            descuento_monto: descMontoQ,
+            total_final: totalFinalQ,
+            total: totalFinalQ,
             canal: "web",
             estado: "confirmada",
             created_at: venta.created_at,
@@ -249,6 +263,7 @@ export default function CartPage() {
         items: ventaItemsSnapshot,
         cliente: cotizacionResult.cliente,
         medio_pago: "transferencia",
+        _desc: cd,
       });
       
     } catch (e: any) {
