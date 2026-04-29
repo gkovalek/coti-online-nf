@@ -354,10 +354,24 @@ export default function CartPage() {
                       </tr>
                     ))}
                   </tbody>
-                  <tfoot className="bg-muted font-bold">
+                  <tfoot className="bg-muted">
                     <tr>
-                      <td colSpan={3} className="p-2 text-right">Total:</td>
-                      <td className="p-2 text-right">{formatARS(cotizacionResult.total)}</td>
+                      <td colSpan={3} className="p-2 text-right text-muted-foreground">Subtotal</td>
+                      <td className="p-2 text-right">{formatARS(cotizacionResult._desc?.subtotal ?? cotizacionResult.subtotal ?? cotizacionResult.total)}</td>
+                    </tr>
+                    {(cotizacionResult._desc?.aplica ?? (cotizacionResult.descuento_monto > 0)) && (
+                      <tr>
+                        <td colSpan={3} className="p-2 text-right text-accent">
+                          Descuento mayorista {cotizacionResult._desc?.porcentaje ?? cotizacionResult.descuento_porcentaje}%
+                        </td>
+                        <td className="p-2 text-right text-accent">
+                          - {formatARS(cotizacionResult._desc?.descuento_monto ?? cotizacionResult.descuento_monto)}
+                        </td>
+                      </tr>
+                    )}
+                    <tr className="font-bold">
+                      <td colSpan={3} className="p-2 text-right">Total final:</td>
+                      <td className="p-2 text-right">{formatARS(cotizacionResult._desc?.total_final ?? cotizacionResult.total_final ?? cotizacionResult.total)}</td>
                     </tr>
                   </tfoot>
                 </table>
