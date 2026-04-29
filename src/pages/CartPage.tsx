@@ -9,8 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trash2, Minus, Plus, FileText, CreditCard, CheckCircle2 } from "lucide-react";
+import { Trash2, Minus, Plus, FileText, CreditCard, CheckCircle2, Sparkles, BadgePercent } from "lucide-react";
 import { toast } from "sonner";
+import { calcularDescuento } from "@/lib/discount";
+import { Badge } from "@/components/ui/badge";
 
 export default function CartPage() {
   const { items, removeItem, updateQty, clear, total } = useCart();
