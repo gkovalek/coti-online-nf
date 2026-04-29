@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trash2, Minus, Plus, FileText, CreditCard, CheckCircle2, Sparkles, BadgePercent } from "lucide-react";
 import { toast } from "sonner";
-import { calcularDescuento } from "@/lib/discount";
+import { calcularDescuento, DESCUENTO_PORCENTAJE } from "@/lib/discount";
 import { Badge } from "@/components/ui/badge";
 
 export default function CartPage() {
