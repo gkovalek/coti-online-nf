@@ -60,7 +60,16 @@ export default function CartPage() {
       const clienteId = await getOrCreateCliente();
       const { data: cot, error } = await supabase
         .from("cotizaciones")
-        .insert({ cliente_id: clienteId, estado: "pendiente", total: total(), canal: "web" })
+        .insert({
+          cliente_id: clienteId,
+          estado: "pendiente",
+          total: desc.total_final,
+          subtotal: desc.subtotal,
+          descuento_porcentaje: desc.porcentaje,
+          descuento_monto: desc.descuento_monto,
+          total_final: desc.total_final,
+          canal: "web",
+        })
         .select()
         .single();
       if (error) throw error;
@@ -80,7 +89,11 @@ export default function CartPage() {
             id: cot.id,
             cliente_id: clienteId,
             numero_cotizacion: (cot as any).numero_cotizacion ?? (cot as any).numero ?? null,
-            total: cot.total,
+            subtotal: desc.subtotal,
+            descuento_porcentaje: desc.porcentaje,
+            descuento_monto: desc.descuento_monto,
+            total_final: desc.total_final,
+            total: desc.total_final,
             estado: "pendiente",
             created_at: cot.created_at,
           }),
@@ -88,7 +101,7 @@ export default function CartPage() {
       } catch (webhookErr) {
         console.error("Error notificando webhook cotización:", webhookErr);
       }
-      setCotizacionResult({ ...cot, items: items.map((i) => ({ ...i })), cliente: form });
+      setCotizacionResult({ ...cot, items: items.map((i) => ({ ...i })), cliente: form, _desc: desc });
       clear();
       toast.success("Cotización creada exitosamente");
     } catch (e: any) {
