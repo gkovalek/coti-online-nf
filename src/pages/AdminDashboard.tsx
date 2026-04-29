@@ -3,7 +3,16 @@ import { supabase } from "@/lib/supabase";
 import { formatARS } from "@/lib/format";
 import { AdminLayout } from "@/components/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DollarSign, ShoppingCart, FileText, TrendingUp, Clock, Hourglass } from "lucide-react";
+
+interface LowStockProduct {
+  id: string;
+  producto: string;
+  sku_norm: string | null;
+  stock: number;
+}
 
 interface DashboardKPIs {
   cantidad_ventas: number;
@@ -17,6 +26,7 @@ interface DashboardKPIs {
 export default function AdminDashboard() {
   const [kpis, setKpis] = useState<DashboardKPIs | null>(null);
   const [loading, setLoading] = useState(true);
+  const [lowStock, setLowStock] = useState<LowStockProduct[]>([]);
 
   useEffect(() => {
     const fetchKPIs = async () => {
@@ -65,7 +75,17 @@ export default function AdminDashboard() {
       setLoading(false);
     };
 
+    const fetchLowStock = async () => {
+      const { data } = await supabase
+        .from("productos")
+        .select("id, producto, sku_norm, stock")
+        .lte("stock", 20)
+        .order("stock", { ascending: true });
+      setLowStock((data as LowStockProduct[]) || []);
+    };
+
     fetchKPIs();
+    fetchLowStock();
   }, []);
 
   const ventasCards = kpis
@@ -114,6 +134,39 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {cotizacionesCards.map(renderCard)}
             </div>
+          </section>
+          <section>
+            <h2 className="text-lg font-semibold mb-3 text-foreground">⚠️ Productos con stock bajo</h2>
+            {lowStock.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Todos los productos tienen stock suficiente</p>
+            ) : (
+              <Card>
+                <CardContent className="p-0">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Producto</TableHead>
+                        <TableHead>SKU</TableHead>
+                        <TableHead>Stock actual</TableHead>
+                        <TableHead>Estado</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {lowStock.map((p) => (
+                        <TableRow key={p.id}>
+                          <TableCell className="font-medium">{p.producto}</TableCell>
+                          <TableCell className="text-xs text-muted-foreground">{p.sku_norm || "—"}</TableCell>
+                          <TableCell>{p.stock}</TableCell>
+                          <TableCell>
+                            <Badge variant="destructive">Stock bajo</Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            )}
           </section>
         </div>
       )}
