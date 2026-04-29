@@ -147,7 +147,14 @@ export default function AdminCatalog() {
                       <div className="w-10 h-10 rounded bg-muted flex items-center justify-center text-[9px] text-muted-foreground">N/A</div>
                     )}
                   </TableCell>
-                  <TableCell className="font-medium">{p.producto}</TableCell>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      <span>{p.producto}</span>
+                      {p.liquidacion_activa && (
+                        <Badge className="text-[9px] bg-destructive text-destructive-foreground hover:bg-destructive/90">Liquidación</Badge>
+                      )}
+                    </div>
+                  </TableCell>
                   <TableCell className="text-xs text-muted-foreground">{p.sku_norm}</TableCell>
                   <TableCell>{p.categoria}</TableCell>
                   <TableCell>{p.proveedor}</TableCell>
