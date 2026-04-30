@@ -148,7 +148,7 @@ export default function CartPage() {
       }));
       await supabase.from("venta_items").insert(ventaItems);
       try {
-        await fetch("https://nueralforce.app.n8n.cloud/webhook/compras-avisos", {
+        await fetch("https://manuenautomatico.app.n8n.cloud/webhook-test/compras-avisos", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -226,7 +226,7 @@ export default function CartPage() {
       await supabase.from("cotizaciones").update({ estado: "convertida" }).eq("id", cotizacionResult.id);
       const ventaItemsSnapshot = cotizacionResult.items.map((i: any) => ({ ...i }));
       try {
-        await fetch("https://nueralforce.app.n8n.cloud/webhook/compras-avisos", {
+        await fetch("https://manuenautomatico.app.n8n.cloud/webhook-test/compras-avisos", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
