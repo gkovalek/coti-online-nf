@@ -58,6 +58,10 @@ export function ChatBubble() {
   const sendMessage = async () => {
     const text = input.trim();
     if (!text || loading) return;
+    if (derivado) {
+      console.log("CHAT DERIVADO A HUMANO: bloqueando envío automático");
+      return;
+    }
     const userMsg: Message = { id: `${Date.now()}-u`, role: "user", text };
     const nextMessages = [...messages, userMsg];
     setMessages(nextMessages);
