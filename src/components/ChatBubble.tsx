@@ -165,6 +165,7 @@ export function ChatBubble() {
       }
 
       // Acciones nominales (string) devueltas por el backend
+      console.log("CHAT ACTION:", accionNombre);
       if (accionNombre) {
         switch (accionNombre) {
           case "abrir_carrito":
@@ -176,8 +177,21 @@ export function ChatBubble() {
           case "abrir_mis_cotizaciones":
             navigate("/buscar-cotizacion");
             break;
+          case "pedir_telefono":
+            setEsperandoTelefono(true);
+            console.log("ESPERANDO TELEFONO:", true);
+            break;
           case "derivar_humano":
-            // Marcador para derivación a humano; sin cambios de UI por ahora
+            setDerivado(true);
+            setEsperandoTelefono(false);
+            console.log("ESPERANDO TELEFONO:", false);
+            console.log("CHAT DERIVADO A HUMANO:", true);
+            break;
+          case "ninguna":
+            if (esperandoTelefono) {
+              setEsperandoTelefono(false);
+              console.log("ESPERANDO TELEFONO:", false);
+            }
             break;
         }
       }
