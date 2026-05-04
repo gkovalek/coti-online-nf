@@ -6,9 +6,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/lib/cart";
 
-const WEBHOOK_URL =
-  import.meta.env.VITE_N8N_CHATBOT_WEBHOOK ||
-  "https://nueralforce.app.n8n.cloud/webhook/chatbot-web-holcim";
+const WEBHOOK_URL = "https://holcim123.app.n8n.cloud/webhook/chatbot-web-holcim";
 
 const HISTORY_LIMIT = 10; // últimos N turnos enviados al backend
 
@@ -87,6 +85,7 @@ export function ChatBubble() {
     };
 
     try {
+      console.log("CHATBOT WEBHOOK URL:", WEBHOOK_URL);
       const res = await fetch(WEBHOOK_URL, {
         method: "POST",
         headers: { "Content-Type": "text/plain" },
