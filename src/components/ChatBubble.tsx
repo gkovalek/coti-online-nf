@@ -38,6 +38,8 @@ export function ChatBubble() {
   const [messages, setMessages] = useState<Message[]>([
     { id: "welcome", role: "bot", text: "¡Hola! ¿En qué te ayudo?" },
   ]);
+  const [esperandoTelefono, setEsperandoTelefono] = useState(false);
+  const [derivado, setDerivado] = useState(false);
   const sessionId = useRef<string>(getSessionId());
   const scrollRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
@@ -56,6 +58,10 @@ export function ChatBubble() {
   const sendMessage = async () => {
     const text = input.trim();
     if (!text || loading) return;
+    if (derivado) {
+      console.log("CHAT DERIVADO A HUMANO: bloqueando envío automático");
+      return;
+    }
     const userMsg: Message = { id: `${Date.now()}-u`, role: "user", text };
     const nextMessages = [...messages, userMsg];
     setMessages(nextMessages);
@@ -159,6 +165,7 @@ export function ChatBubble() {
       }
 
       // Acciones nominales (string) devueltas por el backend
+      console.log("CHAT ACTION:", accionNombre);
       if (accionNombre) {
         switch (accionNombre) {
           case "abrir_carrito":
@@ -170,8 +177,21 @@ export function ChatBubble() {
           case "abrir_mis_cotizaciones":
             navigate("/buscar-cotizacion");
             break;
+          case "pedir_telefono":
+            setEsperandoTelefono(true);
+            console.log("ESPERANDO TELEFONO:", true);
+            break;
           case "derivar_humano":
-            // Marcador para derivación a humano; sin cambios de UI por ahora
+            setDerivado(true);
+            setEsperandoTelefono(false);
+            console.log("ESPERANDO TELEFONO:", false);
+            console.log("CHAT DERIVADO A HUMANO:", true);
+            break;
+          case "ninguna":
+            if (esperandoTelefono) {
+              setEsperandoTelefono(false);
+              console.log("ESPERANDO TELEFONO:", false);
+            }
             break;
         }
       }
