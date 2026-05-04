@@ -38,6 +38,8 @@ export function ChatBubble() {
   const [messages, setMessages] = useState<Message[]>([
     { id: "welcome", role: "bot", text: "¡Hola! ¿En qué te ayudo?" },
   ]);
+  const [esperandoTelefono, setEsperandoTelefono] = useState(false);
+  const [derivado, setDerivado] = useState(false);
   const sessionId = useRef<string>(getSessionId());
   const scrollRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
