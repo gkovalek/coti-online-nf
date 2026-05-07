@@ -130,122 +130,66 @@ export default function AdminDashboard() {
     const fetchExtras = async () => {
       setLoadingExtra(true);
       try {
-        // 1) IDs de ventas confirmadas
-        const { data: ventasConf } = await supabase
-          .from("ventas")
-          .select("id")
-          .eq("estado", "confirmada");
-        const ventaIds = (ventasConf || []).map((v: any) => v.id);
+        // Todo viene de vistas SQL en Supabase (ver /mnt/documents/dashboard_views.sql)
+        const [catsRes, topRes, bottomRes, clientesRes] = await Promise.all([
+          supabase
+            .from("vw_dashboard_categorias_mas_vendidas")
+            .select("categoria, cantidad_vendida"),
+          supabase
+            .from("vw_dashboard_productos_mas_vendidos")
+            .select("producto_id, producto, sku, categoria, cantidad_vendida, facturacion")
+            .limit(10),
+          supabase
+            .from("vw_dashboard_productos_menos_vendidos")
+            .select("producto_id, producto, sku, categoria, cantidad_vendida, facturacion")
+            .limit(10),
+          supabase
+            .from("vw_dashboard_clientes_nuevos")
+            .select("id, nombre, email, telefono, fecha_alta, cantidad_compras, total_comprado")
+            .limit(10),
+        ]);
 
-        // 2) venta_items de esas ventas, con producto y categoría
-        let items: any[] = [];
-        if (ventaIds.length > 0) {
-          const { data } = await supabase
-            .from("venta_items")
-            .select("producto_id, cantidad, precio_unitario, productos(id, nombre, sku_norm, categorias(nombre))")
-            .in("venta_id", ventaIds);
-          items = data || [];
-        }
+        if (catsRes.error) console.error("vw_dashboard_categorias_mas_vendidas:", catsRes.error);
+        if (topRes.error) console.error("vw_dashboard_productos_mas_vendidos:", topRes.error);
+        if (bottomRes.error) console.error("vw_dashboard_productos_menos_vendidos:", bottomRes.error);
+        if (clientesRes.error) console.error("vw_dashboard_clientes_nuevos:", clientesRes.error);
 
-        // Agregar por producto
-        const prodMap = new Map<string, ProductoRanking>();
-        const catMap = new Map<string, number>();
-        for (const it of items) {
-          const cant = Number(it.cantidad || 0);
-          const fact = cant * Number(it.precio_unitario || 0);
-          const p = it.productos;
-          if (!p) continue;
-          const cat = p.categorias?.nombre || "Sin categoría";
-          const key = p.id;
-          const prev = prodMap.get(key);
-          if (prev) {
-            prev.cantidad += cant;
-            prev.facturacion += fact;
-          } else {
-            prodMap.set(key, {
-              producto_id: p.id,
-              nombre: p.nombre,
-              sku: p.sku_norm,
-              categoria: cat,
-              cantidad: cant,
-              facturacion: fact,
-            });
-          }
-          catMap.set(cat, (catMap.get(cat) || 0) + cant);
-        }
-
-        // Top 10 más vendidos
-        const top = Array.from(prodMap.values())
-          .sort((a, b) => b.cantidad - a.cantidad)
-          .slice(0, 10);
-        setTopProductos(top);
-
-        // Categorías top 5 + Otras
-        const catSorted = Array.from(catMap.entries())
-          .map(([nombre, cantidad]) => ({ nombre, cantidad }))
-          .sort((a, b) => b.cantidad - a.cantidad);
-        const top5 = catSorted.slice(0, 5);
-        const resto = catSorted.slice(5).reduce((s, c) => s + c.cantidad, 0);
+        // Categorías: top 5 + Otras
+        const cats = (catsRes.data || []).map((r: any) => ({
+          nombre: r.categoria as string,
+          cantidad: Number(r.cantidad_vendida || 0),
+        }));
+        const top5 = cats.slice(0, 5);
+        const resto = cats.slice(5).reduce((s, c) => s + c.cantidad, 0);
         if (resto > 0) top5.push({ nombre: "Otras", cantidad: resto });
         setCategoriasPie(top5);
 
-        // Menos vendidos: traer todos los productos del catálogo activos
-        const { data: allProds } = await supabase
-          .from("productos")
-          .select("id, nombre, sku_norm, categorias(nombre)")
-          .limit(500);
-        const ranking: ProductoRanking[] = (allProds || []).map((p: any) => {
-          const sold = prodMap.get(p.id);
-          return {
-            producto_id: p.id,
-            nombre: p.nombre,
-            sku: p.sku_norm,
-            categoria: p.categorias?.nombre || "Sin categoría",
-            cantidad: sold?.cantidad || 0,
-            facturacion: sold?.facturacion || 0,
-          };
-        });
-        const bottom = ranking.sort((a, b) => a.cantidad - b.cantidad).slice(0, 10);
-        setBottomProductos(bottom);
+        const mapProd = (rows: any[]): ProductoRanking[] =>
+          (rows || []).map((r: any) => ({
+            producto_id: r.producto_id,
+            nombre: r.producto,
+            sku: r.sku,
+            categoria: r.categoria,
+            cantidad: Number(r.cantidad_vendida || 0),
+            facturacion: Number(r.facturacion || 0),
+          }));
 
-        // Clientes nuevos
-        const { data: clientes } = await supabase
-          .from("clientes")
-          .select("id, nombre, email, telefono, created_at")
-          .order("created_at", { ascending: false })
-          .limit(10);
+        setTopProductos(mapProd(topRes.data || []));
+        setBottomProductos(mapProd(bottomRes.data || []));
 
-        const clientesIds = (clientes || []).map((c: any) => c.id);
-        const totalsByCliente = new Map<string, { count: number; total: number }>();
-        if (clientesIds.length > 0) {
-          const { data: vts } = await supabase
-            .from("ventas")
-            .select("cliente_id, total")
-            .in("cliente_id", clientesIds)
-            .eq("estado", "confirmada");
-          for (const v of vts || []) {
-            const prev = totalsByCliente.get(v.cliente_id) || { count: 0, total: 0 };
-            prev.count += 1;
-            prev.total += Number(v.total || 0);
-            totalsByCliente.set(v.cliente_id, prev);
-          }
-        }
-
-        const clientesEnriched: ClienteNuevo[] = (clientes || []).map((c: any) => {
-          const t = totalsByCliente.get(c.id);
-          return {
+        setClientesNuevos(
+          (clientesRes.data || []).map((c: any) => ({
             id: c.id,
             nombre: c.nombre,
             email: c.email,
             telefono: c.telefono,
-            fecha: c.created_at,
-            cantidad_compras: t?.count || 0,
-            total_comprado: t?.total || 0,
-          };
-        });
-        setClientesNuevos(clientesEnriched);
+            fecha: c.fecha_alta,
+            cantidad_compras: Number(c.cantidad_compras || 0),
+            total_comprado: Number(c.total_comprado || 0),
+          }))
+        );
 
-        // KPIs clientes nuevos
+        // KPIs clientes nuevos (count directo sobre tabla)
         const now = new Date();
         const startMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
         const start30 = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
